@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CS490 Beta</title>
+</head>
+<body>
+
+<div style="text-align: center">
+	<h1>Student Page</h1><hr>
+</div>
+</b></b><hr>
+
+<hr>
+
+
+<footer>
+    <div style="text-align: center">
+        <h2>Group Members</h2>
+        Steve Coluccio - Frontend</br>
+        Mateusz Stolarz - Middle</br>
+        Amine Hosseini - Backend</br>
+    </div>
+</footer>
+
+<script>
+
+function showText() {
+    var uname = document.getElementById("username").value;
+    var passwd = document.getElementById("passwd").value;
+
+    if (uname.length == 0) { 
+        document.getElementById("txtHint").innerHTML = "Enter a username";
+        return;
+    } else if (passwd.length == 0){
+        document.getElementById("txtHint").innerHTML = "Enter a password";
+        return; 
+    }
+
+
+    var xmlhttp = new XMLHttpRequest();
+    
+    //response from middle
+    xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            var resp = JSON.parse(this.responseText);
+            var display_text = "<br />";
+            if(resp.db == "true"){
+                display_text += "Valid username/passsword in project database.<br />";
+
+            }else{
+                display_text += "Invalid username/passsword in project database.<br />";
+            }
+            if(resp.njit == "true"){
+                display_text += "Valid username/passsword in NJIT database.<br />";
+                window.location = "student.html"
+            }else{
+                display_text += "Invalid username/password in NJIT database.<br />"
+            }
+            document.getElementById("txtHint").innerHTML = display_text;
+        }
+    };
+
+    xmlhttp.open("POST", "https://web.njit.edu/~smc53/cgi-bin/connect.php?un=" + uname + "&pw=" + passwd);
+    xmlhttp.send();
+    
+}
+
+</script>
+</body>
+
