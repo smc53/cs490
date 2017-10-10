@@ -1,48 +1,57 @@
 <?php
 
-//To attempt to log in, a POST request must be sent with the data field 'request' that contains the value 'login'.
-//The server will then respond with a jsonPacket that contains one response.
-//A 'T' is returned if the attempt is succesfull, and an 'F' is retured if the attempt fails.
-
 $request                = isset($_POST["request"]) ? $_POST["request"] : "**ERROR**";
 
-if($request == "login") {
-    $username           = $_POST["username"];
-    $password           = $_POST["password"];
-    $url                = $_POST["requestURL"];
-
-    $jsonReturn->Type   = attemptSQLLogin($username, $password);
-
-    echo attemptSQLLogin(json_encode($jsonReturn)); 
+$output                 = '**ERROR No value returned.**';
+if($request == "Login") {
+    $output = attemptLogin($_POST["username"], $_POST["password"]);
+}else{
+    $output = "**ERROR Unsupported request.**";
 }
-function attemptSQLLogin($username, $password) {
-    $conn               = new Mysqli("sql2.njit.edu", "ash32", "OX9Wfn8v", "ash32");
+echo $output;
 
+/*************************************************************************
+Amine Sebastian 10/10/17 5:23PM
+Login function that handles validation of user information.
+@param username The user's username.
+@param password The user's password.
+@return Returns T for teacher, S for student, F if the login fails.
+**************************************************************************/
+function attemptLogin($username, $password) {
+    $conn               = new Mysqli("sql2.njit.edu", "ash32", "OX9Wfn8v", "ash32");
+    $jsonReturn;
     if ($conn->connect_error) {
-        printf("Connect failed: %s\n", connect_error);
-        exit();
+        $jsonReturn->type = 'F';
     }
     $hashedPassword     = md5($password);
     $command            = "SELECT * FROM UsersTable WHERE `Username` = '" .$username . "'";
     if($result          = $conn->query($command)) {
         $count          = mysqli_num_rows($result);
+        mysqli_close($conn);
         if($count >= 1) {
+            $found = false;
             while($row = $result->fetch_assoc()) {
                 if($row['Password'] == $hashedPassword) {
-                    mysqli_close($conn);
-                    if($row['Type'] == 0) {
-                        return 'S';
+                    if($row['AccountType'] == 0) {
+                        $jsonReturn->type   = 'S';
                     }else{
-                        return 'T';
+                        $jsonReturn->type   = 'T';
                     }
+                    $jsonReturn->name       = $row['RealName'];
+                    $found = true;
                 }
             }
-            return 'F';
+            if(!$found) {
+                $jsonReturn->type           = 'F';
+            }
+        }else{
+            $jsonReturn->type               = 'F';
         }
-    }else{
-        echo 'Query failed';
     }
-    mysqli_close($conn);
-    return 0;
+    return json_encode($jsonReturn); 
 }
+
+function addQuestionToBank();
+function deleteQuestionFromBank();
+function getQuestions();
 ?>
