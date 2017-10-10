@@ -20,11 +20,10 @@
 	Password<input type="password" id="passwd"></input>
 	<button type="button" onclick="showText()">Submit</button>
 	</form>
-	<p>Response from Middle-end: <span id="txtHint"></span></p>
 
     <div>
-    <a href="instructor.html">instuctor</a>
-    <a href="student.html">student</a>
+    <a href="instructor.html">instuctor (temp)</a>
+    <a href="student.html">student (temp)</a>
     </div>
     </div>
 </div>
@@ -62,24 +61,19 @@ function showText() {
     xmlhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
             var resp = JSON.parse(this.responseText);
-            var display_text = "<br />";
-            if(resp.db == "true"){
-                display_text += "Valid username/passsword in project database.<br />";
-
-            }else{
-                display_text += "Invalid username/passsword in project database.<br />";
+            if(resp.type == "F"){
+            	document.getElementById("txtHint").innerHTML = display_text;
             }
-            if(resp.njit == "true"){
-                display_text += "Valid username/passsword in NJIT database.<br />";
-                window.location = "student.html"
-            }else{
-                display_text += "Invalid username/password in NJIT database.<br />"
+            if(resp.type == "S"){
+            	window.location = "student.html"
             }
-            document.getElementById("txtHint").innerHTML = display_text;
+            if(resp.type == "T"){
+            	window.location = "instructor.html"
+            }
         }
     };
 
-    xmlhttp.open("POST", "https://web.njit.edu/~smc53/cgi-bin/connect.php?un=" + uname + "&pw=" + passwd);
+    xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/connect.php?request=Login&username=" + uname + "&password=" + passwd);
     xmlhttp.send();
     
 }
