@@ -31,14 +31,14 @@
 <hr>
 
 
-<footer class="footer" style="text-align:center">
+<!--footer class="footer" style="text-align:center">
     <div class="footer-content">
         <h2>Group Members</h2>
         Steve Coluccio - Frontend</br>
         Mateusz Stolarz - Middle</br>
         Amine Hosseini - Backend</br>
     </div>
-</footer>
+</footer-->
 
 <script>
 
@@ -60,6 +60,7 @@ function showText() {
     //response from middle
     xmlhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
+        	alert(this.responseText)
             var resp = JSON.parse(this.responseText);
             if(resp.type == "F"){
             	document.getElementById("txtHint").innerHTML = display_text;
