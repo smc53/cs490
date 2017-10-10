@@ -10,9 +10,11 @@ if($request == "login") {
     $username           = $_POST["username"];
     $password           = $_POST["password"];
     $url                = $_POST["requestURL"];
-    echo attemptSQLLogin($username, $password); 
-}
 
+    $jsonReturn->Type   = attemptSQLLogin($username, $password);
+
+    echo attemptSQLLogin(json_encode($jsonReturn)); 
+}
 function attemptSQLLogin($username, $password) {
     $conn               = new Mysqli("sql2.njit.edu", "ash32", "OX9Wfn8v", "ash32");
 
@@ -28,7 +30,11 @@ function attemptSQLLogin($username, $password) {
             while($row = $result->fetch_assoc()) {
                 if($row['Password'] == $hashedPassword) {
                     mysqli_close($conn);
-                    return 'T';
+                    if($row['Type'] == 0) {
+                        return 'S';
+                    }else{
+                        return 'T';
+                    }
                 }
             }
             return 'F';
