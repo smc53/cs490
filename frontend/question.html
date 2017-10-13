@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Add/Remove Question</title>
+		<link href="css/main.css" rel="stylesheet">
+	</head>
+
+	<body>
+		<div class="container color-main1">
+	        <a href="instructor.html" class="color-main1">home</a>
+	    </div>
+
+		<div class="center">
+			<h1>Add a Question</h1><hr>
+		</div>
+
+		<div class="container center color-main2">
+		    <form class="left-align">
+		    	Question<br>
+		    	<input type="text" id="question" class="input-large" placeholder="Type your question"></input><br>
+		    	Answer<br>
+		    	<input type="text" id="answer" class="input-large" placeholder="Type the answer"></input><br>
+				Parameters<br>
+		    	<input type="text" id="params" class="input-large" placeholder="Type any specific parameters"></input><br>
+		    </form>
+		    	
+
+		    <a type="button" class="button color-bold1" onclick="addQuestion()">Add Question(s)</a>
+		</div> 
+
+		<hr>
+
+		<div class="center">
+			<h1>Remove Questions</h1><hr>
+		</div>
+		<div class="container color-main2 left-align">
+		    <input type="checkbox">question 1 pulled from backend</input><br>
+		    <input type="checkbox">question 2 pulled from backend</input><br>
+		    <input type="checkbox">question 3 pulled from backend</input><br>
+		</div> 
+
+		<div class="center">
+			<a type="button" class="button color-bold1" onclick="removeQuestions()">Remove</a>
+		</div>
+		
+
+		<script type="text/javascript">
+			function addQuestion(){
+				alert("add question check")
+				window.location = "instructor.html"
+			}
+
+
+			function removeQuestions(){
+				alert("remove selections check")
+				window.location = "instructor.html"
+			}
+
+		</script>
+
+	</body>
+</html>

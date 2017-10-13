@@ -1,84 +1,74 @@
 <!DOCTYPE html>
-<html>
-<head>
-	<title>Beta login</title>
-    <link href="css/main.css" rel="stylesheet">
-</head>
-<body>
+<html lang="en">
 
-<div style="text-align: center">
-	<h1>Login</h1><hr>
-</div>
-</b></b><hr>
+    <head>
+    	<title>Beta login</title>
+        <link href="css/main.css" rel="stylesheet">
+    </head>
+    <body class="color-sec2">
 
-<div style="text-align: center" class="wrappper">
-    <div class="content">
-	<h3>Usename | Password</h3>
-	<p><b>Enter a username and password in the input field below:</b></p>
-	<form> 
-	Username<input type="text" id="username"></input>
-	Password<input type="password" id="passwd"></input>
-	<button type="button" onclick="showText()">Submit</button>
-	</form>
+
+    <div role="main">
+        <div class="container color-main2 center">
+            <div>
+                <h1>Login</h1>
+            </div>
+
+        	<form> 
+        	<input type="text" id="username" placeholder="username"></input><br>
+        	<input type="password" id="passwd" placeholder="password"></input><br>
+        	<button class="button color-bold1" onclick="loginAttempt()">Submit</button>
+        	</form>
+        </div>
+    </div>
+
+    <hr>
 
     <div>
-    <a href="instructor.html">instuctor (temp)</a>
-    <a href="student.html">student (temp)</a>
+        <a href="instructor.html">instuctor (temp)</a>
+        <a href="student.html">student (temp)</a>
     </div>
     </div>
-</div>
 
-<hr>
+    <script>
+
+    function loginAttempt() {
+        var uname = document.getElementById("username").value;
+        var passwd = document.getElementById("passwd").value;
+
+        if (uname.length == 0) { 
+            document.getElementById("txtHint").innerHTML = "Enter a username";
+            return;
+        } else if (passwd.length == 0){
+            document.getElementById("txtHint").innerHTML = "Enter a password";
+            return; 
+        }
 
 
-<!--footer class="footer" style="text-align:center">
-    <div class="footer-content">
-        <h2>Group Members</h2>
-        Steve Coluccio - Frontend</br>
-        Mateusz Stolarz - Middle</br>
-        Amine Hosseini - Backend</br>
-    </div>
-</footer-->
+        var xmlhttp = new XMLHttpRequest();
+        
+        //response from middle
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+            	alert(this.responseText)
+                var resp = JSON.parse(this.responseText);
+                if(resp.type == "F"){
+                	document.getElementById("txtHint").innerHTML = display_text;
+                }
+                if(resp.type == "S"){
+                	window.location = "student.html"
+                }
+                if(resp.type == "T"){
+                	window.location = "instructor.html"
+                }
+            }
+        };
 
-<script>
-
-function showText() {
-    var uname = document.getElementById("username").value;
-    var passwd = document.getElementById("passwd").value;
-
-    if (uname.length == 0) { 
-        document.getElementById("txtHint").innerHTML = "Enter a username";
-        return;
-    } else if (passwd.length == 0){
-        document.getElementById("txtHint").innerHTML = "Enter a password";
-        return; 
+        xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-login.php?request=Login&username=" + uname + "&password=" + passwd);
+        xmlhttp.send();
+        
     }
 
-
-    var xmlhttp = new XMLHttpRequest();
-    
-    //response from middle
-    xmlhttp.onreadystatechange = function() {
-        if (this.readyState == 4) {
-        	alert(this.responseText)
-            var resp = JSON.parse(this.responseText);
-            if(resp.type == "F"){
-            	document.getElementById("txtHint").innerHTML = display_text;
-            }
-            if(resp.type == "S"){
-            	window.location = "student.html"
-            }
-            if(resp.type == "T"){
-            	window.location = "instructor.html"
-            }
-        }
-    };
-
-    xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/connect.php?request=Login&username=" + uname + "&password=" + passwd);
-    xmlhttp.send();
-    
-}
-
-</script>
-</body>
-
+    </script>
+    </body>
+</html>

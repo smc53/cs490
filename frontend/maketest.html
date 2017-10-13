@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Create Test</title>
+		<link href="css/main.css" rel="stylesheet">
+	</head>
+
+	<body>
+		<div class="container color-main1">
+	        <a href="instructor.html" class="color-main1">home</a>
+	    </div>
+
+		<div class="center">
+			<h1>Create a New Test</h1>
+		</div>
+
+		<div class="container center">
+		    <div class="container color-main2 left-align">
+		    	Name<input class="input-small" placeholder="Enter the name of this test"></input>
+		    </div>
+		    
+
+		    <div class="container color-main2">	
+			    Select Questions for test
+			    
+			    <div class="container color-main2 left-align">
+				    <input type="checkbox">question 1 pulled from backend</input><br>
+				    <input type="checkbox">question 2 pulled from backend</input><br>
+				    <input type="checkbox">question 3 pulled from backend</input><br>
+				</div> 
+			</div>
+
+			<a type="button" class="button color-bold1" onclick="submitTest()">Submit Test</a>
+			
+		</div> 
+
+
+		<script>
+			function submitTest(){
+				alert("test submit check");
+				window.location = "instructor.html";
+			}
+		</script>
+
+	</body>
+</html>
+
