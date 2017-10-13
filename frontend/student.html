@@ -4,10 +4,11 @@
 	<head>
 		<title>Student page</title>
 		<link href="css/main.css" rel="stylesheet">
+		<script type="text/javascript" src=js/main.js></script>
 	</head>
 
 	<body>
-		<div class="container color-main1 right-align">
+		<div class="color-main1 right-align">
 	        <a href="login.html" class="color-main1">logout</a>
 	    </div>
 		
@@ -17,10 +18,24 @@
 
 		<div class="container color-main2 center">
 			<div>
-				<a type="button" href="taketest.html" class="button color-bold1">Take Test</a>
-				<a type="button" href="grades.html" class="button color-bold1">View Grades</a>
+				<div class="container color-main2 center">
+					<ul id="testlist" class="left-align"></ul>
+					<button class="button color-bold1" onclick="location.href='taketest.html';" >View Grades</button>
+				</div>
+				
+				<button class="button color-bold1" onclick="location.href='grades.html';" >View Grades</button>
 			</div>
 		</div>
+
+		<script>
+
+			window.onload = function(){
+				//testing
+				var testjson = '{"tests":["test name 1","another test","impossible test"]}'
+				fillTestList(testjson);
+			}	
+
+		</script>
 
 	</body>
 </html>

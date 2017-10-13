@@ -3,10 +3,11 @@
 	<head>
 		<title>Instructor page</title>
 		<link href="css/main.css" rel="stylesheet">
+		<script type="text/javascript" src=js/main.js></script>
 	</head>
 
 	<body>
-		<div class="container color-main1 right-align">
+		<div class="color-main1 right-align">
 	        <a href="login.html" class="color-main1">logout</a>
 	    </div>
 		
@@ -16,14 +17,29 @@
 
 		<div class="container color-main2 center">
 			<div>
-				<a type="button" href="maketest.html" class="button color-bold1">Create Test</a>
-				<a type="button" href="question.html" class="button color-bold1">Add/Remove Question</a>
+				<button class="button color-bold1" onclick="location.href='maketest.html';">Add/Remove Test</button>
+				<button class="button color-bold1" onclick="location.href='question.html';">Add/Remove Question</button>
 			</div>
 		</div>
 
+
 		<div class="container color-main2 center">
-			container with available tests
+			<h2>Available Tests</h2>
+			<ul id="testlist" class="left-align"></ul>
 		</div>
+
+		<script type="text/javascript">
+			
+			window.onload = function(){
+
+				//testing
+				var testjson = '{"tests":["test name 1","another test","impossible test"]}'
+				fillTestList(testjson);
+			}	
+
+			
+		</script>
+
 	</body>
 </html>
 
