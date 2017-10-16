@@ -1,27 +1,47 @@
+
 <!DOCTYPE html>
-<html>
-<head>
-	<title>take selected test</title>
-</head>
-<body>
-<div>navbar
-        <a href="student.html">home</a>
-    </div>
-<div style="text-align: center">
-	<h1>test</h1><hr>
-</div>
+<html lang="en">
+    <head>
+        <title>Student Test</title>
+        <link href="css/main.css" rel="stylesheet">
+    </head>
 
-<div>
-    <div>Question: ###</div>
-    <a href="">next question</a>
-    <a href="">prev question</a>
-    <div>form for submitting answer
-    </div>
-    <dir>submit button</dir>
-</div> 
+    <body>
+        <div class="color-main1">
+            <a href="student.html" class="color-main1 nav-bar">home</a>
+        </div>
+        
+        <div class="center" id="testname">
+            <h1>Test name</h1><hr>
+        </div>
 
-<hr>
 
-</body>
+        <div class="container color-main2 left-align">
+            <div class="left-align">
+                <button class="button color-bold1" onclick="prevQuestion()">prev</button>
+                <button class="button color-bold1" onclick="nextQuestion()">next</button>
+                Question #
 
+                <h3>Question text : with more text telling you what the hell to do for this really simple problem</h3>
+            </div>
+        </div>
+
+        <div class="container test-container color-main2">
+            <input type="text" id="answer" class="test-column" placeholder="Type the answer"></input>
+            <input type="text" id="answer" class="test-column" placeholder="Type the answer"></input>
+        </div>
+
+        <script>
+            function nextQuestion(){
+                alert("goto next question");
+            }
+            function prevQuestion(){
+                alert("goto prev question");
+            }
+
+        </script>
+
+
+    </body>
+</html>
 
