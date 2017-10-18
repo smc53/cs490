@@ -68,20 +68,16 @@ function deleteQuestionFromBank($user, $questionID) {
 function getQuestions() {
     $query     = "SELECT * FROM `QuestionBank`;";
     $result    = runSQLQuerry($query);
-    $jsonReturn;
-    $idArray;
-    $questionArray;
+    $questionArray = array();
     while($row = $result->fetch_assoc()) {
-        array_push($idArray, $row["ID"]);
-        array_push($questionArray, $row["Question"]);
+        $jsonTemp->ID = $row["ID"];
+        $jsonTemp->question = $row["Question"];
+        array_push($questionArray, json_encode($jsonTemp));
     }
-    $jsonReturn->ids        = $idArray;
+    $jsonReturn;
     $jsonReturn->questions  = $questionArray;
-    return 1;
+    return json_encode($jsonReturn);
 }
-
-
-
 
 /******************************** Library Functions **************************************/
 function runSQLQuerry($query) {
