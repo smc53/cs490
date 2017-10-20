@@ -3,7 +3,6 @@
 	<head>
 		<title>Create Test</title>
 		<link href="css/main.css" rel="stylesheet">
-		<script type="text/javascript" src=js/main.js></script>
 	</head>
 
 	<body>
@@ -17,19 +16,18 @@
 
 		<div class="center">
 		    <div class="container color-main2 left-align">
-		    	Name<input class="input-small" placeholder="Enter the name of this test"></input>
+		    	Name<input class="input-small" id="testname" placeholder="Enter the name of this test"></input>
 		    </div>
 		    
 		    <div class="container color-main2">	
 			    Select Questions for test
 			    <div class="container color-main2 left-align">
 				    <input type="checkbox">question 1 pulled from backend</input><br>
-				    <input type="checkbox">question 2 pulled from backend</input><br>
-				    <input type="checkbox">question 3 pulled from backend</input><br>
 				</div> 
+				
 			</div>
 
-			<button class="button color-bold1" onclick="submitTest()">Create Test</button>
+			<button class="button color-bold1" onclick="requestQuery('add')">Create Test</button>
 		
 
 			<hr>
@@ -37,30 +35,75 @@
 			<div class="center">
 				<h1>Remove Test</h1>
 			</div>
-
-			<div class="container color-main2 center">
-				<ul id="testlist" class="left-align"></ul>
+			<div class="container color-main2 left-align" name="qlist">
+	    		<input type="checkbox">question 1 pulled from backend</input><br>
 			</div>
 			<button class="button color-bold1" onclick="removeTest()">Remove</button>
 
 		</div> 
 
 		<script>
-			function submitTest(){
-				alert("test submit check");
-				window.location = "instructor.html";
-			}
+			var questions;
 
 			function removeTest(){
 				alert("test remove check");
 				window.location = "instructor.html";
 			}
+
+			function fillTestList(testjson){
+                var json = JSON.parse(testjson);
+                var list = document.getElementById("qlist");
+                for(var i = 0; i < json.tests.length; i++){
+                    var entry = document.createElement('input');
+                    entry.class = 'qfield';
+                    entry.value = i;
+                    entry.appendChild(document.createTextNode(json.tests[i]));
+                    list.appendChild(entry);
+                }
+            }
 			
+			function requestQuery(msg){
+                var xmlhttp = new XMLHttpRequest();
+                        
+				//response from middle
+                xmlhttp.onreadystatechange = function() {
+                	if(this.readyState == 4) {
+                		//TODO, break this up
+                		console.log("resp " + this.responseText);
+                		questions = JSON.parse(this.responseText).questions;
+                		console.log("qs " + questions.length);
+                        fillTestList(this.responseText);
+	                }
+                };
+
+                if(msg == "load"){
+	                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestions");
+	            }
+
+	            if(msg == "add"){
+	            	var checkedValues = new Array();
+	            	var inputElements = document.getElementsByClassName('qfield');
+	            	for(var i=0; inputElements[i]; ++i){
+	            		if(inputElements[i].checked){
+	            			checkedValues.push(inputElements[i].value);
+	            		}
+	            	}
+	            	var jsonData = {
+	            		"testname" : document.getElementById("testname").value,
+	            		"qid" : checkedValues //selected questions from checkbox
+	            	}
+	            	var json = JSON.stringify(jsonData)
+	            	alert(json);
+	            	xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=AddTest&username=ttest&payload=" + json);
+	            }
+
+                xmlhttp.send();
+            }
+
 			
 			window.onload = function(){
-				//testing
-				var testjson = '{"tests":["test name 1","another test","impossible test"]}'
-				fillTestList(testjson);
+				requestQuery("load");
+				//fillTestList(testjson);
 			}	
 
 		</script>

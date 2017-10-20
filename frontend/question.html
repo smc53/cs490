@@ -24,7 +24,7 @@
 		    	<input type="text" id="params" class="input-large" placeholder="Type any specific parameters"></input><br>
 		    </form>
 		    	
-		    <button class="button color-bold1" onclick="addQuestion()">Add Question</button>
+		    <button type="button" class="color-bold1" onclick="addQuestion()">Add Question</button>
 		</div> 
 
 		<hr>
@@ -32,28 +32,95 @@
 		<div class="center">
 			<h1>Remove Questions</h1><hr>
 		</div>
-		<div class="container color-main2 left-align">
+		<div class="container color-main2 left-align" name="qlist">
 		    <input type="checkbox">question 1 pulled from backend</input><br>
-		    <input type="checkbox">question 2 pulled from backend</input><br>
-		    <input type="checkbox">question 3 pulled from backend</input><br>
 		</div> 
 
 		<div class="center">
-			<button class="button color-bold1" onclick="removeQuestions()">Remove</button>
+			<button type="button" class="color-bold1" onclick="removeQuestions()">Remove</button>
 		</div>
 		
 
 		<script type="text/javascript">
 			function addQuestion(){
-				alert("add question check")
-				window.location = "instructor.html"
+				var xmlhttp = new XMLHttpRequest();
+                //response from middle
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                    	console.log(this.responseText);	
+                        alert("Add Question " + this.responseText);
+						//window.location = "instructor.html";
+                    }
+                };
+
+                var qtext = document.getElementById("question").value;
+                var atext = document.getElementById("answer").value;
+                var ptext = document.getElementById("params").value;
+
+                
+                var jsonData = {
+                	"question" : qtext,
+                	"answer" : atext,
+                	"params" : ptext
+                };
+
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=AddQuestion&username=ttest&payload=" + JSON.stringify(jsonData));
+                xmlhttp.send();
 			}
 
+			
+            function fillQuestionList(testjson){
+                var json = JSON.parse(testjson);
+                var list = document.getElementsByName("qlist")[0];
+                for(var i = 0; i < json.tests.length; i++){
+                    var entry = document.createElement('input');
+                    entry.type = "checkbox";
+                    entry.value = i;
+                    entry.innerHTML = json.tests[i];
+                    //entry.value = json.tests[i];
+                    //entry.appendChild(document.createTextNode(json.tests[i]));
+                    list.appendChild(entry);
+                    list.appendChild(document.createElement('br'));
+                }
+            }
 
-			function removeQuestions(){
-				alert("remove selections check")
-				window.location = "instructor.html"
-			}
+            
+
+            function removeQuestions(){
+            	var checkedValue = null;
+            	var inputElements = document.getElementsByName('qlist');
+            	for(var i=0; i < inputElements.length; i++){
+            		if(inputElements[0][i].checked){
+            			checkedValue = inputValue[i].value;
+            		}
+            	}
+            	//window.location = "instructor.html"
+            }
+
+
+
+			function loadRequest(){
+                var xmlhttp = new XMLHttpRequest();
+                        
+                //response from middle
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        console.log("test ", this.responseText)
+                        fillTQuestionList(responseText);
+                    }
+                };
+
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestions");
+                xmlhttp.send();
+            }
+
+
+            window.onload = function(){
+                //loadRequest();
+				//testing
+				//var testjson = '{"tests":["test name 2","another test","impossible test"]}'
+				//fillQuestionList(testjson);
+			}	
 
 		</script>
 
