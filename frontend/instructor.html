@@ -30,17 +30,8 @@
 
 		<script type="text/javascript">
 			
-			window.onload = function(){
-                //loadRequest();
-				//testing
-				var testjson = '{"tests":["test name 2","another test","impossible test"]}'
-				fillTestList(testjson);
-			}	
-
-
-            function fillTestList(testjson){
-                var json = JSON.parse(testjson);
-
+            function fillTestList(resp){
+                var json = JSON.parse(resp);
                 var list = document.getElementById("testlist");
                 for(var i = 0; i < json.tests.length; i++){
                     var entry = document.createElement('li');
@@ -55,8 +46,11 @@
                 //response from middle
                 xmlhttp.onreadystatechange = function() {
                     if (this.readyState == 4) {
-                        console.log("test ", this.responseText)
-                        fillTestList(responseText);
+                    	if(this.responseText.indexOf('ERROR') !== -1){
+                			alert("Error in GetAllTests response!");
+                			return;
+                		}
+                        fillTestList(this.responseText);
                     }
                 };
 
@@ -64,6 +58,12 @@
                 xmlhttp.send();
 
             }
+
+
+
+            window.onload = function(){
+                loadRequest();
+			}
 
 			
 		</script>

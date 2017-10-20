@@ -16,94 +16,147 @@
 
 		<div class="center">
 		    <div class="container color-main2 left-align">
-		    	Name<input class="input-small" id="testname" placeholder="Enter the name of this test"></input>
+		    	Test Name<input class="input-small" id="testname" placeholder="Enter the name of this test">
 		    </div>
 		    
 		    <div class="container color-main2">	
-			    Select Questions for test
-			    <div class="container color-main2 left-align">
-				    <input type="checkbox">question 1 pulled from backend</input><br>
-				</div> 
-				
+			    <h3>Select Questions for test</h3>
+			    <div class="container color-main2 left-align" id="qlist"></div> 
 			</div>
 
-			<button class="button color-bold1" onclick="requestQuery('add')">Create Test</button>
+			<button type="button" class="color-bold1" onclick="createTest()">Create Test</button>
 		
-
 			<hr>
 
 			<div class="center">
-				<h1>Remove Test</h1>
+				<h2>Remove Test</h2>
 			</div>
-			<div class="container color-main2 left-align" name="qlist">
-	    		<input type="checkbox">question 1 pulled from backend</input><br>
-			</div>
-			<button class="button color-bold1" onclick="removeTest()">Remove</button>
+			<div class="container color-main2 left-align" id="tlist"></div>
+			<button type="button" class="color-bold1" onclick="removeTest()">Remove Test</button>
 
 		</div> 
 
 		<script>
-			var questions;
 
-			function removeTest(){
-				alert("test remove check");
-				window.location = "instructor.html";
-			}
+            function createTest(){
+            	if(document.getElementById("testname").value.length == 0){
+            		alert("Please enter a test name!");
+            		return;
+            	}
 
-			function fillTestList(testjson){
-                var json = JSON.parse(testjson);
-                var list = document.getElementById("qlist");
-                for(var i = 0; i < json.tests.length; i++){
-                    var entry = document.createElement('input');
-                    entry.class = 'qfield';
-                    entry.value = i;
-                    entry.appendChild(document.createTextNode(json.tests[i]));
-                    list.appendChild(entry);
-                }
+            	var checkedValues = new Array();
+            	var inputElements = document.getElementsByClassName('qfield');
+            	for(var i=0; inputElements[i]; ++i){
+            		if(inputElements[i].checked){
+            			checkedValues.push(inputElements[i].value);
+            		}
+            	}
+
+            	if(checkedValues.length == 0) {
+            		alert("Select questions for test!");
+            		return;
+            	}
+
+            	var jsonData = {
+            		"testname" : document.getElementById("testname").value,
+            		"qid" : checkedValues //selected questions from checkbox
+            	}
+            	var json = JSON.stringify(jsonData)
+            	alert(json);
+            	var xmlhttp = new XMLHttpRequest();
+            	xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=AddTest&username=ttest&payload=" + json);
+            	xmlhttp.send();
             }
 			
-			function requestQuery(msg){
-                var xmlhttp = new XMLHttpRequest();
-                        
-				//response from middle
+
+			function removeTest(){
+				console.log("remove test");
+				var checkedValues = new Array();
+            	var inputElements = document.getElementsByClassName('tfield');
+            	for(var i=0; inputElements[i]; ++i){
+            		if(inputElements[i].checked){
+            			checkedValues.push(inputElements[i].value);
+            		}
+            	}
+
+            	if(checkedValues.length == 0) {
+            		alert("Select tests to remove!");
+            		return;
+            	}
+
+            	var jsonData = {
+            		"id" : checkedValues //selected questions from checkbox
+            	}
+            	var json = JSON.stringify(jsonData)
+            	var xmlhttp = new XMLHttpRequest();
+            	xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=RemoveTests&username=ttest&payload=" + json);
+            	xmlhttp.send();
+			}
+			
+
+
+			window.onload = function(){
+
+				//Get all questions on load
+				var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function() {
                 	if(this.readyState == 4) {
-                		//TODO, break this up
-                		console.log("resp " + this.responseText);
-                		questions = JSON.parse(this.responseText).questions;
-                		console.log("qs " + questions.length);
-                        fillTestList(this.responseText);
+                		console.log(this.responseText);
+                		if(this.responseText.indexOf('ERROR') !== -1){
+                			alert("Error in GetQuestions response!");
+                			return;
+                		}
+
+                		resp = JSON.parse(this.responseText);
+                		if(resp.hasOwnProperty('questions')){
+			                var list = document.getElementById("qlist");
+			                for(var i = 0; i < resp.questions.length; i++){
+			                	var qelement = JSON.parse(resp.questions[i]);
+			                    var entry = document.createElement('input');
+			                    entry.className = 'qfield';
+			                    entry.value = qelement.ID;
+			                    entry.type = 'checkbox'
+			                    list.appendChild(entry);
+			                    list.appendChild(document.createTextNode(qelement.question));
+			                    list.appendChild(document.createElement('br'));
+			                }
+                		}
 	                }
                 };
 
-                if(msg == "load"){
-	                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestions");
-	            }
-
-	            if(msg == "add"){
-	            	var checkedValues = new Array();
-	            	var inputElements = document.getElementsByClassName('qfield');
-	            	for(var i=0; inputElements[i]; ++i){
-	            		if(inputElements[i].checked){
-	            			checkedValues.push(inputElements[i].value);
-	            		}
-	            	}
-	            	var jsonData = {
-	            		"testname" : document.getElementById("testname").value,
-	            		"qid" : checkedValues //selected questions from checkbox
-	            	}
-	            	var json = JSON.stringify(jsonData)
-	            	alert(json);
-	            	xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=AddTest&username=ttest&payload=" + json);
-	            }
-
+	            xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestions");
                 xmlhttp.send();
-            }
 
-			
-			window.onload = function(){
-				requestQuery("load");
-				//fillTestList(testjson);
+
+                //Get all Tests on load
+                var xmlhttpTests = new XMLHttpRequest();
+                xmlhttpTests.onreadystatechange = function() {
+                	if(this.readyState == 4) {
+                		console.log(this.responseText);
+                		if(this.responseText.indexOf('ERROR') !== -1){
+                			alert("Error in GetAllTests response!");
+                			return;
+                		}
+
+                		resp = JSON.parse(this.responseText);
+                		if(resp.hasOwnProperty('tests')){
+			                var list = document.getElementById("tlist");
+			                for(var i = 0; i < resp.questions.length; i++){
+			                	var telement = JSON.parse(resp.tests[i]);
+			                    var entry = document.createElement('input');
+			                    entry.className = 'tfield';
+			                    entry.value = telement.ID;
+			                    entry.type = 'checkbox'
+			                    list.appendChild(entry);
+			                    list.appendChild(document.createTextNode(telement.name));
+			                    list.appendChild(document.createElement('br'));
+			                }
+                		}
+	                }
+                };
+
+	            xmlhttpTests.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetAllTests");
+                xmlhttpTests.send();
 			}	
 
 		</script>

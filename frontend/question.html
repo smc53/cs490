@@ -11,7 +11,7 @@
 	    </div>
 
 		<div class="center">
-			<h1>Add a Question</h1><hr>
+			<h2>Add a Question</h2><hr>
 		</div>
 
 		<div class="container center color-main2">
@@ -30,26 +30,20 @@
 		<hr>
 
 		<div class="center">
-			<h1>Remove Questions</h1><hr>
+			<h2>Remove Questions</h2><hr>
 		</div>
-		<div class="container color-main2 left-align" name="qlist">
-		    <input type="checkbox">question 1 pulled from backend</input><br>
-		</div> 
-
-		<div class="center">
-			<button type="button" class="color-bold1" onclick="removeQuestions()">Remove</button>
-		</div>
-		
+		<div class="container color-main2 left-align" id="qlist"></div> 
+        <div class="center">
+            <button type="button" class="center color-bold1" onclick="removeQuestions()">Remove</button>    
+        </div>
+        
 
 		<script type="text/javascript">
 			function addQuestion(){
 				var xmlhttp = new XMLHttpRequest();
-                //response from middle
                 xmlhttp.onreadystatechange = function() {
                     if (this.readyState == 4) {
-                    	console.log(this.responseText);	
-                        alert("Add Question " + this.responseText);
-						//window.location = "instructor.html";
+                    	window.location.reload(false);
                     }
                 };
 
@@ -57,7 +51,6 @@
                 var atext = document.getElementById("answer").value;
                 var ptext = document.getElementById("params").value;
 
-                
                 var jsonData = {
                 	"question" : qtext,
                 	"answer" : atext,
@@ -68,18 +61,19 @@
                 xmlhttp.send();
 			}
 
+
 			
             function fillQuestionList(testjson){
                 var json = JSON.parse(testjson);
-                var list = document.getElementsByName("qlist")[0];
-                for(var i = 0; i < json.tests.length; i++){
+                var list = document.getElementById("qlist");
+                for(var i = 0; i < json.questions.length; i++){
+                    var qelement = JSON.parse(json.questions[i]);
                     var entry = document.createElement('input');
-                    entry.type = "checkbox";
-                    entry.value = i;
-                    entry.innerHTML = json.tests[i];
-                    //entry.value = json.tests[i];
-                    //entry.appendChild(document.createTextNode(json.tests[i]));
+                    entry.className = 'qfield';
+                    entry.value = qelement.ID;
+                    entry.type = 'checkbox';
                     list.appendChild(entry);
+                    list.appendChild(document.createTextNode(qelement.question));
                     list.appendChild(document.createElement('br'));
                 }
             }
@@ -87,14 +81,26 @@
             
 
             function removeQuestions(){
-            	var checkedValue = null;
-            	var inputElements = document.getElementsByName('qlist');
-            	for(var i=0; i < inputElements.length; i++){
-            		if(inputElements[0][i].checked){
-            			checkedValue = inputValue[i].value;
-            		}
-            	}
-            	//window.location = "instructor.html"
+            	//var checkedValues = new Array();
+                var inputElements = document.getElementsByClassName('qfield');
+                for(var i=0; inputElements[i]; ++i){
+                    if(inputElements[i].checked){
+                        var jsonData = {
+                            "questionID" : inputElements[i].value,
+                        }
+                        var json = JSON.stringify(jsonData);
+                        alert("REMOVE Q json: " + json);
+
+                        var xmlhttp = new XMLHttpRequest();
+                        xmlhttp.onreadystatechange = function() {
+                            if (this.readyState == 4) {
+                                window.location.reload(false);
+                            }
+                        };
+                        xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=RemoveQuestion&username=ttest&payload=" + json);
+                        xmlhttp.send();
+                    }
+                }
             }
 
 
@@ -105,8 +111,7 @@
                 //response from middle
                 xmlhttp.onreadystatechange = function() {
                     if (this.readyState == 4) {
-                        console.log("test ", this.responseText)
-                        fillTQuestionList(responseText);
+                        fillQuestionList(this.responseText);
                     }
                 };
 
@@ -116,10 +121,7 @@
 
 
             window.onload = function(){
-                //loadRequest();
-				//testing
-				//var testjson = '{"tests":["test name 2","another test","impossible test"]}'
-				//fillQuestionList(testjson);
+                loadRequest();
 			}	
 
 		</script>
