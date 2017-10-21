@@ -27,8 +27,7 @@
         </div>
 
         <div class="container test-container color-main2">
-            <input type="text" id="answer" class="test-column" placeholder="Type the answer"></input>
-            <input type="text" id="answer" class="test-column" placeholder="Type the answer"></input>
+            <textarea class="input-test" rows="20" placeholder="Type your answer"></textarea>
         </div>
 
         <script>
@@ -37,6 +36,27 @@
             }
             function prevQuestion(){
                 alert("goto prev question");
+            }
+
+            window.onload = function(){
+                console.log("testid from url: " + window.location.search.substring(1).split("=")[1]);
+
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        if(this.responseText.indexOf('ERROR') !== -1){
+                            alert("Error in GetAllTests response!");
+                            return;
+                        }
+                        //fill test info for question 1
+                    }
+                };
+
+                var jsonData = {
+                    "examID" : window.location.search.substring(1).split("=")[1]
+                };
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetTestData&username=stest&payload=" + JSON.stringify(jsonData));
+                xmlhttp.send();
             }
 
         </script>

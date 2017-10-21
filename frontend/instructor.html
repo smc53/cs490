@@ -40,7 +40,7 @@
                 }
             }
 
-            function loadRequest(){
+            window.onload = function(){
                 var xmlhttp = new XMLHttpRequest();
                         
                 //response from middle
@@ -56,13 +56,6 @@
 
                 xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetAllTests");
                 xmlhttp.send();
-
-            }
-
-
-
-            window.onload = function(){
-                loadRequest();
 			}
 
 			

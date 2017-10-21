@@ -17,11 +17,11 @@
 		<div class="container center color-main2">
 		    <form class="left-align">
 		    	Question<br>
-		    	<input type="text" id="question" class="input-large" placeholder="Type your question"></input><br>
+		    	<textarea rows="10" type="text" id="question" class="input-question" placeholder="Type your question"></textarea><br>
 		    	Answer<br>
-		    	<input type="text" id="answer" class="input-large" placeholder="Type the answer"></input><br>
+		    	<textarea rows="10" type="text" id="answer" class="input-question" placeholder="Type the answer"></textarea><br>
 				Parameters<br>
-		    	<input type="text" id="params" class="input-large" placeholder="Type any specific parameters"></input><br>
+		    	<textarea rows="10" type="text" id="params" class="input-question" placeholder="Type any specific parameters"></textarea><br>
 		    </form>
 		    	
 		    <button type="button" class="color-bold1" onclick="addQuestion()">Add Question</button>
@@ -51,6 +51,11 @@
                 var atext = document.getElementById("answer").value;
                 var ptext = document.getElementById("params").value;
 
+                if(qtext == "" || atext == "" || ptext == ""){
+                    alert("Please fill out missing fields in question form!");
+                    return;
+                }
+
                 var jsonData = {
                 	"question" : qtext,
                 	"answer" : atext,
@@ -62,7 +67,6 @@
 			}
 
 
-			
             function fillQuestionList(testjson){
                 var json = JSON.parse(testjson);
                 var list = document.getElementById("qlist");

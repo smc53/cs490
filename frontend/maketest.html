@@ -15,16 +15,17 @@
 		</div>
 
 		<div class="center">
+			<div class="container left-align"><h4>Test Name</h4></div>
 		    <div class="container color-main2 left-align">
-		    	Test Name<input class="input-small" id="testname" placeholder="Enter the name of this test">
+		    	<input class="input-test" id="testname" placeholder="Enter the name of this test">
 		    </div>
 		    
+		    <div class="container left-align"><h4>Select Questions for test</h4></div>
 		    <div class="container color-main2">	
-			    <h3>Select Questions for test</h3>
-			    <div class="container color-main2 left-align" id="qlist"></div> 
+			    <div class="color-main2 left-align" id="qlist"></div> 
 			</div>
 
-			<button type="button" class="color-bold1" onclick="createTest()">Create Test</button>
+			<button type="button" class="color-bold1" onclick="createTest()">Submit</button>
 		
 			<hr>
 
@@ -32,7 +33,7 @@
 				<h2>Remove Test</h2>
 			</div>
 			<div class="container color-main2 left-align" id="tlist"></div>
-			<button type="button" class="color-bold1" onclick="removeTest()">Remove Test</button>
+			<button type="button" class="color-bold1" onclick="removeTest()">Submit</button>
 
 		</div> 
 
@@ -64,6 +65,13 @@
             	var json = JSON.stringify(jsonData)
             	alert(json);
             	var xmlhttp = new XMLHttpRequest();
+
+            	xmlhttp.onreadystatechange = function() {
+            		if(this.readyState == 4) {
+            			window.location.reload(false);
+            		}
+            	}
+
             	xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=AddTest&username=ttest&payload=" + json);
             	xmlhttp.send();
             }
@@ -89,6 +97,13 @@
             	}
             	var json = JSON.stringify(jsonData)
             	var xmlhttp = new XMLHttpRequest();
+
+            	xmlhttp.onreadystatechange = function() {
+            		if(this.readyState == 4) {
+            			window.location.reload(false);
+            		}
+            	}
+
             	xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=RemoveTests&username=ttest&payload=" + json);
             	xmlhttp.send();
 			}

@@ -19,21 +19,63 @@
 		<div class="container color-main2 center">
 			<div>
 				<div class="container color-main2 center">
-					<ul id="testlist" class="left-align"></ul>
-					<button class="button color-bold1" onclick="location.href='taketest.html';" >Take Test</button>
+					<form id="testlist" class="left-align">
+						<input type="radio" value="0" class="tfield"/>temp test name
+					</form>
+					<button type="button" class="color-bold1" onclick="taketest()" >Take Test</button>
 				</div>
 				
-				<button class="button color-bold1" onclick="location.href='grades.html';" >View Grades</button>
+				<button type="button" class="color-bold1" onclick="location.href='grades.html';" >View Grades</button>
 			</div>
 		</div>
 
 		<script>
 
+			function fillTestList(resp){
+                var json = JSON.parse(resp);
+                var list = document.getElementById("testlist");
+                for(var i = 0; i < json.tests.length; i++){
+                    var telement = JSON.parse(json.tests[i]);
+                    var entry = document.createElement('input');
+                    entry.className = 'tfield';
+                    entry.value = telement.ID;
+                    entry.type = 'radio';
+                    list.appendChild(entry);
+                    list.appendChild(document.createTextNode(telement.name));
+                    list.appendChild(document.createElement('br'));
+                }
+            }
+
+            function taketest(){
+            	//get radio button id
+            	var inputElements = document.getElementsByClassName('tfield');
+            	console.log(inputElements.length);
+                for(var i=0; inputElements[i]; ++i){
+
+                    if(inputElements[i].checked){
+                    	console.log("test id: " + inputElements[i].value);
+                    	location.href = 'taketest.html?testid=' + inputElements[i].value;
+                    	return;
+                    }
+                }
+                alert("Select a test to take!");
+            }
+
 			window.onload = function(){
-				//testing
-				var testjson = '{"tests":["test name 1","another test","impossible test"]}'
-				fillTestList(testjson);
-			}	
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                    	if(this.responseText.indexOf('ERROR') !== -1){
+                			alert("Error in GetAllTests response!");
+                			return;
+                		}
+                        fillTestList(this.responseText);
+                    }
+                };
+
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetAllTests");
+                xmlhttp.send();
+			}
 
 		</script>
 
