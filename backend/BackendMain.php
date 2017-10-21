@@ -3,19 +3,22 @@
 $request                = isset($_POST["request"]) ? $_POST["request"] : "**ERROR**";
 
 $output                 = '**No value returned.**';
-$payload                = json_decode($_POST["payload"], true);
 
-if($request == "Login") {
-    $output = json_encode(attemptLogin($_POST["username"], $_POST["password"]));
-}else if($request == "AddQuestion") {
-    $output = addQuestionToBank($_POST["username"], $payload);
-}else if($request == "DeleteQuestion") {
-    $output = deleteQuestionFromBank($_POST["username"], $payload);
-}else if($request == "GetQuestions") {
-    $output = getQuestions();
-}else{
-    $output = "**ERROR Unsupported request.**";
+if($request != "**ERROR**") {
+    $payload                = json_decode($_POST["payload"], true);
+    if($request == "Login") {
+        $output = json_encode(attemptLogin($_POST["username"], $_POST["password"]));
+    }else if($request == "AddQuestion") {
+        $output = addQuestionToBank($_POST["username"], $payload);
+    }else if($request == "DeleteQuestion") {
+        $output = deleteQuestionFromBank($_POST["username"], $payload);
+    }else if($request == "GetQuestions") {
+        $output = getQuestions();
+    }else{
+        $output = "**ERROR Unsupported request.**";
+    }
 }
+
 echo $output;
 
 /*************************************************************************
@@ -59,7 +62,7 @@ function addQuestionToBank($user, $payload) {
     runSQLQuerry($query);
     return 1;
 }
-function deleteQuestionFromBank($user, $questionID) {
+function deleteQuestionFromBank($user, $payload) {
     $questionID = $payload["ID"];
     $query      = "DELETE FROM `QuestionBank` WHERE 'ID' = '".$questionID."';";
     runSQLQuerry($query);
@@ -78,7 +81,10 @@ function getQuestions() {
     $jsonReturn->questions  = $questionArray;
     return json_encode($jsonReturn);
 }
-
+function saveExam($user, $payload) {
+    $examID = $payload["ID"];
+    $answers = $payload["Answers"];
+}
 /******************************** Library Functions **************************************/
 function runSQLQuerry($query) {
     $conn   = new Mysqli("sql2.njit.edu", "ash32", "OX9Wfn8v", "ash32");
