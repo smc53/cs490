@@ -10,10 +10,24 @@ if($request != "**ERROR**") {
         $output = json_encode(attemptLogin($_POST["username"], $_POST["password"]));
     }else if($request == "AddQuestion") {
         $output = addQuestionToBank($_POST["username"], $payload);
-    }else if($request == "DeleteQuestion") {
+    }else if($request == "RemoveQuestion") {
         $output = deleteQuestionFromBank($_POST["username"], $payload);
     }else if($request == "GetQuestions") {
         $output = getQuestions();
+    }else if($request == "GetAllTests") {
+        $output = getAllTests();
+    }else if($request == "AddTest") {
+        $output = addTest($_POST["username"], $payload);
+    }else if($request == "RemoveTests") {
+        $output = removeTests($_POST["username"], $payload);
+    }else if($request == "GetTestData") {
+        $output = getTestData($payload);
+    }else if($request == "GetQuestion") {
+        $output = getSingleQuestion($payload);
+    }else if($request == "SubmitQuestion") {
+        $output = submitQuestion($_POST["username"], $payload);
+    }else if($request == "GetCompletedExam") {
+        $output = getCompletedExam($_POST["username"], $payload);
     }else{
         $output = "**ERROR Unsupported request.**";
     }
@@ -62,12 +76,6 @@ function addQuestionToBank($user, $payload) {
     runSQLQuerry($query);
     return 1;
 }
-function deleteQuestionFromBank($user, $payload) {
-    $questionID = $payload["ID"];
-    $query      = "DELETE FROM `QuestionBank` WHERE 'ID' = '".$questionID."';";
-    runSQLQuerry($query);
-    return 1;
-}
 function getQuestions() {
     $query     = "SELECT * FROM `QuestionBank`;";
     $result    = runSQLQuerry($query);
@@ -81,9 +89,99 @@ function getQuestions() {
     $jsonReturn->questions  = $questionArray;
     return json_encode($jsonReturn);
 }
-function saveExam($user, $payload) {
+function getAllTests() {
+    $query = "SELECT * FROM `ConfiguredExaminations`;";
+    $result = runSQLQuerry($query);
+    $testArray = array();
+    while($row = $result->fetch_assoc()) {
+        $jsonTemp->ID = $row["ID"];
+        $jsonTemp->name = $row["Name"];
+        $jsonTemp->questions = $row["QuestionIDs"];
+        array_push($testArray, json_encode($jsonTemp));
+    }
+    $jsonReturn;
+    $jsonReturn->tests  = $testArray;
+    return json_encode($jsonReturn);
+}
+function getTestData($payload) {
+    $query     = "SELECT * FROM `ConfiguredExaminations` WHERE `ID` = '".$payload["examID"]."';";
+    $result    = runSQLQuerry($query);
+    $row       = $result->fetch_assoc();
+    $jsonReturn;
+    $jsonReturn->ids = $row["QuestionIDs"];
+    $jsonReturn->name = $row["Name"];
+    return json_encode($jsonReturn);
+}
+function getSingleQuestion($payload) {
+    $query     = "SELECT * FROM `QuestionBank` WHERE `ID` = '".$payload["ID"]."';";
+    $result    = runSQLQuerry($query);
+    $row       = $result->fetch_assoc();
+    $jsonReturn;
+    $jsonReturn->question = $row["Question"];
+    return json_encode($jsonReturn);
+}
+function addTest($user, $payload) {
+    $query = "INSERT INTO `ConfiguredExaminations`(`CreatorID`, `Name`, `QuestionIDs`) VALUES ('".$user."', '".$payload["testname"]."', '".$payload["qid"] ."');";
+    $result = runSQLQuerry($query);
+    return 1;
+}
+function removeTests($user, $payload) {
     $examID = $payload["ID"];
-    $answers = $payload["Answers"];
+    $query      = "DELETE FROM `ConfiguredExaminations` WHERE `ID` = '".$examID."';";
+    runSQLQuerry($query);
+    return 1;
+}
+function deleteQuestionFromBank($user, $payload) {
+    $questionID = $payload["questionID"];
+    $query      = "DELETE FROM `QuestionBank` WHERE `ID` = '".$questionID."';";
+    runSQLQuerry($query);
+    return 1;
+}
+function submitQuestion($user, $payload) {
+    $query = "INSERT INTO `CompletedExaminations`(`StudentID`, `ExamID`, `QuestionID`, `Answer`) VALUES ('".$user."', '".$payload["testid"]."', '".$payload["questionid"]."', '".$payload["answer"]."');";
+    runSQLQuerry($query);
+    return 1;
+}
+function getCompletedExam($user, $payload) {
+    $examID             = $payload["examID"];
+    $studentID          = getUserID($user);
+    $examQuery          = "SELECT * FROM `ConfiguredExaminations` WHERE `ID` = ".$examID.";";
+
+    $examResult         = runSQLQuerry($examQuery);
+    $examRow            = $examResult->fetch_assoc();
+    $questionCSV        = $examRow["QuestionIDs"];
+    $questionIDList     = explode(',', $questionCSV);
+    $questionArray      = array();
+    $correctAnswerArray = array();
+    $metadataArray      = array();
+    $studentAnswerArray = array();
+
+    foreach($questionIDList as $questionID) {
+        $questionQuery      = "SELECT * FROM `QuestionBank` WHERE `ID` = '".$questionID."';";
+        $questionResult     = runSQLQuerry($questionQuery);
+        $questionRow        = $questionResult->fetch_assoc();
+        array_push($questionArray, $questionRow["Question"]);
+        array_push($correctAnswerArray, $questionRow["ExpectedOutput"]);
+        array_push($metadataArray, $questionRow["Metadata"]);
+
+        $studentAnswerQuery     = "SELECT `Answer` FROM `CompletedExaminations` WHERE `ExamID` = '".$examID."' AND `QuestionID` = '".$questionID."' AND `StudentID` = '".$studentID."' ORDER BY `ID` DESC;";
+        $studentAnswerResult    = runSQLQuerry($studentAnswerQuery);
+        $studentAnswerRow       = $studentAnswerResult->fetch_assoc();
+        array_push($studentAnswerArray, $studentAnswerRow["Answer"]);
+    }
+
+    $jsonReturn;
+    $jsonReturn->questions      = $questionArray;
+    $jsonReturn->correctAnswers = $correctAnswerArray;
+    $jsonReturn->metadata       = $metadataArray;
+    $jsonReturn->answers        = $studentAnswerArray;
+    return json_encode($jsonReturn);
+}
+function getUserID($username) {
+    $query = "SELECT `ID` FROM `UsersTable` WHERE `Username` = '".$username."';";
+    $result     = runSQLQuerry($query);
+    $row        = $result->fetch_assoc();
+    return $row["ID"];
 }
 /******************************** Library Functions **************************************/
 function runSQLQuerry($query) {
