@@ -32,10 +32,10 @@ function getCompletedExam($user, $payload) {
     }
 
     $jsonReturn;
-    $jsonReturn->questions = $questionArray;
+    $jsonReturn->questions      = $questionArray;
     $jsonReturn->correctAnswers = $correctAnswerArray;
-    $jsonReturn->metadata = $metadataArray;
-    $jsonReturn->answers = $studentAnswerArray;
+    $jsonReturn->metadata       = $metadataArray;
+    $jsonReturn->answers        = $studentAnswerArray;
     return json_encode($jsonReturn);
 }
 function getUserID($username) {
