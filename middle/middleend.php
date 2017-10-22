@@ -226,10 +226,11 @@ $jsonForword->grades = $testgrades;
 $jsonForword->testgrade = $testgrade;
 $jsonForword->username = $username;
 $jsonForword->answers = $answerarray;
+$JsonForword->examID = $examID;
 $json = json_encode($jsonForword);
-$post= ['username'=>$username , 'payload'=>$json];
+//$post= ['username'=>$username , 'payload'=>$json];
 //var_dump($post);
-echo $post;
+echo $json;
 
 
 //var_dump( curltobackend($post));
