@@ -1,43 +1,44 @@
 <?php
-$request                = isset($_POST["request"]) ? $_POST["request"] : "**ERROR**";
-$output                 = '**No value returned.**';
-if($request != "**ERROR**") {
-    $payload                = json_decode($_POST["payload"], true);
-    if($request == "Login") {
-        $output = attemptLogin($_POST["username"], $_POST["password"]);
-    }else if($request == "AddQuestion") {
-        $output = addQuestionToBank($_POST["username"], $payload);
-    }else if($request == "RemoveQuestion") {
-        $output = deleteQuestionFromBank($_POST["username"], $payload);
-    }else if($request == "GetQuestions") {
-        $output = getQuestions();
-    }else if($request == "GetAllTests") {
-        $output = getAllTests();
-    }else if($request == "AddTest") {
-        $output = addTest($_POST["username"], $payload);
-    }else if($request == "RemoveTests") {
-        $output = removeTests($_POST["username"], $payload);
-    }else if($request == "GetTestData") {
-        $output = getTestData($payload);
-    }else if($request == "GetQuestion") {
-        $output = getSingleQuestion($payload);
-    }else if($request == "SubmitQuestion") {
-        $output = submitQuestion($_POST["username"], $payload);
-    }else if($request == "GetCompletedExam") {
-        $output = getCompletedExam($_POST["username"], $payload);
-    }else if($request == "SubmitGradedExam") {
-        $output = submitGradedExam($_POST["username"], $payload);
-    }else if($request == "GetGradesForExam") {
-        $output = getGradesForExam($payload);
-    }else if($request == "GetStudentGrades") {
-        $output = getStudentGrades($user);
-    }else if($request == "GetStudentExamGrade") {
-        $output = getStudentExamGrade($user, $payload);
-    }else{
-        $output = "**ERROR Unsupported request.**";
+
+/*Error Messages*/
+$invalidRequestMessage = "**No value returned.**";
+$missingRequestMessage = "**NO REQUEST SENT**";
+$SQLConnectionErrorMessage = "**SQL Connection Failed**";
+$SQLExecutionErrorMessage = "**SQL Execution Failed**";
+
+/*************************************************************************
+Request Service Loop.
+**************************************************************************/
+if(isset($_POST["request"])) {
+    $request  = $_POST["request"];
+    $username = $_POST["username"];
+    $password = $_POST["password"];
+    $output   = $invalidRequestMessage;
+    $payload  = json_decode($_POST["payload"], true);
+    switch($request) {
+        case "Login"                : $output = attemptLogin($username, $password);          break;                      
+        case "AddQuestion"          : $output = addQuestionToBank($username, $payload);      break;
+        case "RemoveQuestion"       : $output = deleteQuestionFromBank($username, $payload); break;
+        case "GetQuestions"         : $output = getQuestions();                              break;
+        case "GetAllTests"          : $output = getAllTests();                               break;
+        case "AddTest"              : $output = addTest($username, $payload);                break;
+        case "RemoveTests"          : $output = removeTests($username, $payload);            break;      
+        case "GetTestData"          : $output = getTestData($payload);                       break; 
+        case "GetQuestion"          : $output = getSingleQuestion($payload);                 break;     
+        case "SubmitQuestion"       : $output = submitQuestion($username, $payload);         break;  
+        case "GetCompletedExam"     : $output = getCompletedExam($username, $payload);       break;     
+        case "SubmitGradedExam"     : $output = submitGradedExam($username, $payload);       break; 
+        case "GetGradesForExam"     : $output = getGradesForExam($payload);                  break;  
+        case "GetStudentGrades"     : $output = getStudentGrades($username);                 break;     
+        case "GetStudentExamGrade"  : $output = getStudentExamGrade($user, $payload);        break;
+        default                     : $output = "**ERROR Unsupported request.**";            break;
     }
+    echo $output;
+}else{
+    echo $missingRequestMessage;
 }
-echo $output;
+
+
 /*************************************************************************
 Amine Sebastian 10/10/17 5:23PM
 Login function that handles validation of user information.
