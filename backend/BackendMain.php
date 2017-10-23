@@ -28,6 +28,14 @@ if($request != "**ERROR**") {
         $output = submitQuestion($_POST["username"], $payload);
     }else if($request == "GetCompletedExam") {
         $output = getCompletedExam($_POST["username"], $payload);
+    }else if($request == "SubmitGradedExam") {
+        $output = submitGradedExam($_POST["username"], $payload);
+    }else if($request == "GetGradesForExam") {
+        $output = getGradesForExam($payload);
+    }else if($request == "GetStudentGrades") {
+        $output = getStudentGrades($user);
+    }else if($request == "GetStudentExamGrade") {
+        $output = getStudentExamGrade($user, $payload);
     }else{
         $output = "**ERROR Unsupported request.**";
     }
@@ -74,7 +82,7 @@ function addQuestionToBank($user, $payload) {
     echo $user;
     $query    = "INSERT INTO `QuestionBank`(`CreatorID`, `Metadata`, `Question`, `ExpectedOutput`) VALUES ('".$user."', '".$metadata."', '".$question."', '".$answer."');";
     runSQLQuerry($query);
-    return 1;
+    return 'T';
 }
 function getQuestions() {
     $query     = "SELECT * FROM `QuestionBank`;";
@@ -123,24 +131,24 @@ function getSingleQuestion($payload) {
 function addTest($user, $payload) {
     $query = "INSERT INTO `ConfiguredExaminations`(`CreatorID`, `Name`, `QuestionIDs`) VALUES ('".$user."', '".$payload["testname"]."', '".$payload["qid"] ."');";
     $result = runSQLQuerry($query);
-    return 1;
+    return 'T';
 }
 function removeTests($user, $payload) {
     $examID = $payload["ID"];
     $query      = "DELETE FROM `ConfiguredExaminations` WHERE `ID` = '".$examID."';";
     runSQLQuerry($query);
-    return 1;
+    return 'T';
 }
 function deleteQuestionFromBank($user, $payload) {
     $questionID = $payload["questionID"];
     $query      = "DELETE FROM `QuestionBank` WHERE `ID` = '".$questionID."';";
     runSQLQuerry($query);
-    return 1;
+    return 'T';
 }
 function submitQuestion($user, $payload) {
     $query = "INSERT INTO `CompletedExaminations`(`StudentID`, `ExamID`, `QuestionID`, `Answer`) VALUES ('".$user."', '".$payload["testid"]."', '".$payload["questionid"]."', '".$payload["answer"]."');";
     runSQLQuerry($query);
-    return 1;
+    return 'T';
 }
 function getCompletedExam($user, $payload) {
     $examID             = $payload["examID"];
@@ -177,11 +185,44 @@ function getCompletedExam($user, $payload) {
     $jsonReturn->answers        = $studentAnswerArray;
     return json_encode($jsonReturn);
 }
-function getUserID($username) {
-    $query = "SELECT `ID` FROM `UsersTable` WHERE `Username` = '".$username."';";
+function submitGradedExam($user, $payload) {
+    $query  = "INSERT INTO `Grades`(`StudentID`, `ExamID`, `Comments`) VALUES ('".getUserID($user)."', '".$payload["examID"]."', '".$payload["comments"]."')";
+    runSQLQuerry($query);
+    return 'T';
+}
+function getStudentExamGrade($user, $payload) {
+    $query  = "SELECT * WHERE `StudentID` = '".getUserID($user)."' AND `ExamID` = '".$payload["examID"]."' ORDER BY `ID` DESC;";
+    $result = runSQLQuerry($query);
+    $row    =  $examResult->fetch_assoc();
+    $jsonReturn;
+    $jsonReturn->comments = $row["Comments"];
+    return json_encode($jsonReturn);
+}
+function getStudentGrades($user) {
+    $query      = "SELECT * WHERE `StudentID` = '".getUserID($user)."' ORDER BY `ID` DESC;";
     $result     = runSQLQuerry($query);
-    $row        = $result->fetch_assoc();
-    return $row["ID"];
+    $gradeArray = array();
+    while($row = $result->fetch_assoc()) {
+        $jsonTemp->examID = $row["ExamID"];
+        $jsonTemp->comments = $row["Comments"];
+        array_push($gradeArray, json_encode($jsonTemp));
+    }
+    $jsonReturn;
+    $jsonReturn->grades  = $gradeArray;
+    return json_encode($jsonReturn);
+}
+function getGradesForExam($payload) {
+    $query      = "SELECT * WHERE `ExamID` = '".$payload["examID"]."' ORDER BY `ID` DESC;";
+    $result     = runSQLQuerry($query);
+    $gradeArray = array();
+    while($row = $result->fetch_assoc()) {
+        $jsonTemp->studentID    = $row["StudentID"];
+        $jsonTemp->comments     = $row["Comments"];
+        array_push($gradeArray, json_encode($jsonTemp));
+    }
+    $jsonReturn;
+    $jsonReturn->grades  = $gradeArray;
+    return json_encode($jsonReturn);
 }
 /******************************** Library Functions **************************************/
 function runSQLQuerry($query) {
@@ -192,5 +233,11 @@ function runSQLQuerry($query) {
     $result = $conn->query($query);
     mysqli_close($conn);
     return $result;
+}
+function getUserID($username) {
+    $query = "SELECT `ID` FROM `UsersTable` WHERE `Username` = '".$username."';";
+    $result     = runSQLQuerry($query);
+    $row        = $result->fetch_assoc();
+    return $row["ID"];
 }
 ?>
