@@ -1,13 +1,10 @@
 <?php
-
 $request                = isset($_POST["request"]) ? $_POST["request"] : "**ERROR**";
-
 $output                 = '**No value returned.**';
-
 if($request != "**ERROR**") {
     $payload                = json_decode($_POST["payload"], true);
     if($request == "Login") {
-        $output = json_encode(attemptLogin($_POST["username"], $_POST["password"]));
+        $output = attemptLogin($_POST["username"], $_POST["password"]);
     }else if($request == "AddQuestion") {
         $output = addQuestionToBank($_POST["username"], $payload);
     }else if($request == "RemoveQuestion") {
@@ -40,9 +37,7 @@ if($request != "**ERROR**") {
         $output = "**ERROR Unsupported request.**";
     }
 }
-
 echo $output;
-
 /*************************************************************************
 Amine Sebastian 10/10/17 5:23PM
 Login function that handles validation of user information.
@@ -54,20 +49,16 @@ function attemptLogin($username, $password) {
     $jsonReturn;
     $jsonReturn->type   = 'F';
     $hashedPassword     = md5($password);
-    $query            = "SELECT * FROM UsersTable WHERE `Username` = '" .$username . "' AND `Password` = '".$hashedPassword."'";
-    if($result          = runSQLQuerry($query)) {
+    $query              = "SELECT * FROM UsersTable WHERE `Username` = '" .$username . "' AND `Password` = '".$hashedPassword."'";
+    if($result  = runSQLQuerry($query)) {
         if($row = $result->fetch_assoc()) {
             if($row['Password'] == $hashedPassword) {
-                if($row['AccountType'] == 0) {
-                    $jsonReturn->type   = 'S';
-                }else{
-                    $jsonReturn->type   = 'T';
-                }
-                $jsonReturn->name       = $row['RealName'];
+                $jsonReturn->type   = $row['AccountType'] == 0 ? 'S' : 'T';
+                $jsonReturn->name   = $row['RealName'];
             }
         }
     }
-    return $jsonReturn; 
+    return json_encode($jsonReturn); 
 }
 /*************************************************************************
 Amine Sebastian 10/17/17 8:23PM
@@ -79,17 +70,16 @@ function addQuestionToBank($user, $payload) {
     $metadata = $payload["params"];
     $question = $payload["question"];
     $answer   = $payload["answer"];
-    echo $user;
     $query    = "INSERT INTO `QuestionBank`(`CreatorID`, `Metadata`, `Question`, `ExpectedOutput`) VALUES ('".$user."', '".$metadata."', '".$question."', '".$answer."');";
     runSQLQuerry($query);
     return 'T';
 }
 function getQuestions() {
-    $query     = "SELECT * FROM `QuestionBank`;";
-    $result    = runSQLQuerry($query);
-    $questionArray = array();
+    $query          = "SELECT * FROM `QuestionBank`;";
+    $result         = runSQLQuerry($query);
+    $questionArray  = array();
     while($row = $result->fetch_assoc()) {
-        $jsonTemp->ID = $row["ID"];
+        $jsonTemp->ID       = $row["ID"];
         $jsonTemp->question = $row["Question"];
         array_push($questionArray, json_encode($jsonTemp));
     }
@@ -98,12 +88,12 @@ function getQuestions() {
     return json_encode($jsonReturn);
 }
 function getAllTests() {
-    $query = "SELECT * FROM `ConfiguredExaminations`;";
-    $result = runSQLQuerry($query);
-    $testArray = array();
+    $query      = "SELECT * FROM `ConfiguredExaminations`;";
+    $result     = runSQLQuerry($query);
+    $testArray  = array();
     while($row = $result->fetch_assoc()) {
-        $jsonTemp->ID = $row["ID"];
-        $jsonTemp->name = $row["Name"];
+        $jsonTemp->ID        = $row["ID"];
+        $jsonTemp->name      = $row["Name"];
         $jsonTemp->questions = $row["QuestionIDs"];
         array_push($testArray, json_encode($jsonTemp));
     }
@@ -116,7 +106,7 @@ function getTestData($payload) {
     $result    = runSQLQuerry($query);
     $row       = $result->fetch_assoc();
     $jsonReturn;
-    $jsonReturn->ids = $row["QuestionIDs"];
+    $jsonReturn->ids  = $row["QuestionIDs"];
     $jsonReturn->name = $row["Name"];
     return json_encode($jsonReturn);
 }
@@ -129,13 +119,13 @@ function getSingleQuestion($payload) {
     return json_encode($jsonReturn);
 }
 function addTest($user, $payload) {
-    $query = "INSERT INTO `ConfiguredExaminations`(`CreatorID`, `Name`, `QuestionIDs`) VALUES ('".$user."', '".$payload["testname"]."', '".$payload["qid"] ."');";
+    $query  = "INSERT INTO `ConfiguredExaminations`(`CreatorID`, `Name`, `QuestionIDs`) VALUES ('".$user."', '".$payload["testname"]."', '".$payload["qid"] ."');";
     $result = runSQLQuerry($query);
     return 'T';
 }
 function removeTests($user, $payload) {
     $examID = $payload["ID"];
-    $query      = "DELETE FROM `ConfiguredExaminations` WHERE `ID` = '".$examID."';";
+    $query  = "DELETE FROM `ConfiguredExaminations` WHERE `ID` = '".$examID."';";
     runSQLQuerry($query);
     return 'T';
 }
@@ -154,7 +144,6 @@ function getCompletedExam($user, $payload) {
     $examID             = $payload["examID"];
     $studentID          = getUserID($user);
     $examQuery          = "SELECT * FROM `ConfiguredExaminations` WHERE `ID` = ".$examID.";";
-
     $examResult         = runSQLQuerry($examQuery);
     $examRow            = $examResult->fetch_assoc();
     $questionCSV        = $examRow["QuestionIDs"];
@@ -163,7 +152,6 @@ function getCompletedExam($user, $payload) {
     $correctAnswerArray = array();
     $metadataArray      = array();
     $studentAnswerArray = array();
-
     foreach($questionIDList as $questionID) {
         $questionQuery      = "SELECT * FROM `QuestionBank` WHERE `ID` = '".$questionID."';";
         $questionResult     = runSQLQuerry($questionQuery);
@@ -171,13 +159,11 @@ function getCompletedExam($user, $payload) {
         array_push($questionArray, $questionRow["Question"]);
         array_push($correctAnswerArray, $questionRow["ExpectedOutput"]);
         array_push($metadataArray, $questionRow["Metadata"]);
-
         $studentAnswerQuery     = "SELECT `Answer` FROM `CompletedExaminations` WHERE `ExamID` = '".$examID."' AND `QuestionID` = '".$questionID."' AND `StudentID` = '".$studentID."' ORDER BY `ID` DESC;";
         $studentAnswerResult    = runSQLQuerry($studentAnswerQuery);
         $studentAnswerRow       = $studentAnswerResult->fetch_assoc();
         array_push($studentAnswerArray, $studentAnswerRow["Answer"]);
     }
-
     $jsonReturn;
     $jsonReturn->questions      = $questionArray;
     $jsonReturn->correctAnswers = $correctAnswerArray;
@@ -203,7 +189,7 @@ function getStudentGrades($user) {
     $result     = runSQLQuerry($query);
     $gradeArray = array();
     while($row = $result->fetch_assoc()) {
-        $jsonTemp->examID = $row["ExamID"];
+        $jsonTemp->examID   = $row["ExamID"];
         $jsonTemp->comments = $row["Comments"];
         array_push($gradeArray, json_encode($jsonTemp));
     }
@@ -215,7 +201,7 @@ function getGradesForExam($payload) {
     $query      = "SELECT * WHERE `ExamID` = '".$payload["examID"]."' ORDER BY `ID` DESC;";
     $result     = runSQLQuerry($query);
     $gradeArray = array();
-    while($row = $result->fetch_assoc()) {
+    while($row  = $result->fetch_assoc()) {
         $jsonTemp->studentID    = $row["StudentID"];
         $jsonTemp->comments     = $row["Comments"];
         array_push($gradeArray, json_encode($jsonTemp));
@@ -226,7 +212,7 @@ function getGradesForExam($payload) {
 }
 /******************************** Library Functions **************************************/
 function runSQLQuerry($query) {
-    $conn   = new Mysqli("sql2.njit.edu", "ash32", "OX9Wfn8v", "ash32");
+    $conn = new Mysqli("sql2.njit.edu", "ash32", "OX9Wfn8v", "ash32");
     if ($conn->connect_error) {
         return null;
     }
@@ -235,9 +221,9 @@ function runSQLQuerry($query) {
     return $result;
 }
 function getUserID($username) {
-    $query = "SELECT `ID` FROM `UsersTable` WHERE `Username` = '".$username."';";
-    $result     = runSQLQuerry($query);
-    $row        = $result->fetch_assoc();
+    $query  = "SELECT `ID` FROM `UsersTable` WHERE `Username` = '".$username."';";
+    $result = runSQLQuerry($query);
+    $row    = $result->fetch_assoc();
     return $row["ID"];
 }
 ?>
