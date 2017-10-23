@@ -1,8 +1,8 @@
 <?php
 if(isset($_POST['request'])){
   $request= $_POST['request'];
+///    other then grade request, just forword to Backend     ///  
   if($request!="SubmitGrading"){
-    //////////////////CURL to BackEnd////////////////////////////////
     $post=$_POST;
     $string = http_build_query($post);  
     $ch = curl_init();
@@ -13,7 +13,7 @@ if(isset($_POST['request'])){
     curl_close($ch);
     echo $dbresponse;
   }elseif($request=="SubmitGrading"){
-
+// used for submitting the graded test  ///
 function curltobackend($query){
     $string2 = http_build_query($query);  
     $ch = curl_init();
@@ -25,13 +25,14 @@ function curltobackend($query){
     curl_close($ch);  
     return $response;
 }
+//    write the python code into file ///
 function writefile($filename,$content,$call){
    $myfile = fopen($filename, "w") or die("Unable to open file!");
    $txt = $content."\n"."polska=".$call."\n".'print ("\n")'."\n"."print( polska )";
    fwrite($myfile, $txt);
    fclose($myfile);
 }
-///// execute python3 file and return the result if any ///////////////
+//    execute python3 file and return the result if any ///////////////
 function exePython($fname, $userin){
   if($userin){
     $command = "timeout 3s python3 ".$fname." < input.txt";
@@ -45,6 +46,7 @@ function exePython($fname, $userin){
     return "";
   }
 }
+// if the program involves user input, write it to file   //
 function writeinput($callpa){
    $callinput=preg_split("/,/", $callpa[1]);
    $input="";
@@ -57,7 +59,6 @@ function writeinput($callpa){
    fclose($myfile);
    $userinput=true;
 }
-
 
 $testcomments = array();  // array of comments in order
 $testgrades = array();    // array of grades   in order
@@ -73,14 +74,14 @@ $Answerfile = "answer1.py";
 // need to get test id from front end***************************************************************************************************************************
 $username="stest"; // temporary
 $examID=6;         // temporary
-//$username=$_POST['username'];
-//$paylo=$_POST['payload'];
-//$payobj= json_decode($paylo, true); 
-//$examID=$payobj["examID"]; 
+$username=$_POST['username'];
+$paylo=$_POST['payload'];
+$payobj= json_decode($paylo, true); 
+$examID=$payobj["examID"]; 
  
  
  
-/*   
+  
 //           Get Json From Back end upon finished test               //   
 $payload = new \stdClass();
 $payload->examID = $examID;
@@ -89,16 +90,8 @@ $jsonpayload = json_encode($payload);
 $postr= ['request'=>'GetCompletedExam','username'=>$username,'payload'=>$jsonpayload ];
 $json= curltobackend($postr);
 
-*/
-//var_dump($json);
-
-$username=$_POST['username'];
-$json = $_POST['payload'];
-
-
 //           Decode the json into Appropriate Arrays                 //
 $obj= json_decode($json, true);
-$examID = $obj["examID"];
 $correctarray= $obj["correctAnswers"];
 $callarray = $obj["metadata"];
 $answerarray=$obj['answers'];
@@ -165,7 +158,7 @@ for($q=0;$q<$questions;$q++){
          if(sizeof($outputJ)>0 && $returnJ[0]==0){
                $answeroutput = exePython($Answerfile, $userinput);
               if($answeroutput!=""){
-                   $comment=$comment."<br>Answer executed after function defenition fix<br>";
+                   $comment=$comment."<br>Mistake in function defenition, -1<br>";
                    $penelty=1;
                    $recivedanswer[]=$answeroutput;
                    $success=true;
@@ -193,7 +186,7 @@ for($q=0;$q<$questions;$q++){
           $output=", Correct <br>";  
           $ccount++; 
        }
-       $comment= $comment."Case | ".$callfield[$i]." Correct return: ".$expectedanswer[$i].", Your return: ".$recivedanswer[$i].$output; 
+       $comment= $comment."Call: | ".$callfield[$i]." Expected: ".$expectedanswer[$i].", Recived: ".$recivedanswer[$i].$output; 
       }
       $grade=($ccount/count($expectedanswer))*10-$penelty;
       if($grade<0){
@@ -228,7 +221,7 @@ $jsonForword->username = $username;
 $jsonForword->answers = $answerarray;
 $JsonForword->examID = $examID;
 $json = json_encode($jsonForword);
-//$post= ['username'=>$username , 'payload'=>$json];
+$post= ['username'=>$username ,'request'=>'SubmitGradedExam', 'payload'=>$json];
 //var_dump($post);
 echo $json;
 
