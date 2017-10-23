@@ -1,10 +1,10 @@
 <?php
 
 /*Error Messages*/
-$invalidRequestMessage = "**No value returned.**";
-$missingRequestMessage = "**NO REQUEST SENT**";
+$invalidRequestMessage     = "**No value returned.**";
+$missingRequestMessage     = "**NO REQUEST SENT**";
 $SQLConnectionErrorMessage = "**SQL Connection Failed**";
-$SQLExecutionErrorMessage = "**SQL Execution Failed**";
+$SQLExecutionErrorMessage  = "**SQL Execution Failed**";
 
 /*************************************************************************
 Request Service Loop.
@@ -92,7 +92,7 @@ function getAllTests() {
     $query      = "SELECT * FROM `ConfiguredExaminations`;";
     $result     = runSQLQuerry($query);
     $testArray  = array();
-    while($row = $result->fetch_assoc()) {
+    while($row  = $result->fetch_assoc()) {
         $jsonTemp->ID        = $row["ID"];
         $jsonTemp->name      = $row["Name"];
         $jsonTemp->questions = $row["QuestionIDs"];
@@ -103,9 +103,9 @@ function getAllTests() {
     return json_encode($jsonReturn);
 }
 function getTestData($payload) {
-    $query     = "SELECT * FROM `ConfiguredExaminations` WHERE `ID` = '".$payload["examID"]."';";
-    $result    = runSQLQuerry($query);
-    $row       = $result->fetch_assoc();
+    $query            = "SELECT * FROM `ConfiguredExaminations` WHERE `ID` = '".$payload["examID"]."';";
+    $result           = runSQLQuerry($query);
+    $row              = $result->fetch_assoc();
     $jsonReturn;
     $jsonReturn->ids  = $row["QuestionIDs"];
     $jsonReturn->name = $row["Name"];
@@ -154,15 +154,15 @@ function getCompletedExam($user, $payload) {
     $metadataArray      = array();
     $studentAnswerArray = array();
     foreach($questionIDList as $questionID) {
-        $questionQuery      = "SELECT * FROM `QuestionBank` WHERE `ID` = '".$questionID."';";
-        $questionResult     = runSQLQuerry($questionQuery);
-        $questionRow        = $questionResult->fetch_assoc();
+        $questionQuery       = "SELECT * FROM `QuestionBank` WHERE `ID` = '".$questionID."';";
+        $questionResult      = runSQLQuerry($questionQuery);
+        $questionRow         = $questionResult->fetch_assoc();
         array_push($questionArray, $questionRow["Question"]);
         array_push($correctAnswerArray, $questionRow["ExpectedOutput"]);
         array_push($metadataArray, $questionRow["Metadata"]);
-        $studentAnswerQuery     = "SELECT `Answer` FROM `CompletedExaminations` WHERE `ExamID` = '".$examID."' AND `QuestionID` = '".$questionID."' AND `StudentID` = '".$studentID."' ORDER BY `ID` DESC;";
-        $studentAnswerResult    = runSQLQuerry($studentAnswerQuery);
-        $studentAnswerRow       = $studentAnswerResult->fetch_assoc();
+        $studentAnswerQuery  = "SELECT `Answer` FROM `CompletedExaminations` WHERE `ExamID` = '".$examID."' AND `QuestionID` = '".$questionID."' AND `StudentID` = '".$studentID."' ORDER BY `ID` DESC;";
+        $studentAnswerResult = runSQLQuerry($studentAnswerQuery);
+        $studentAnswerRow    = $studentAnswerResult->fetch_assoc();
         array_push($studentAnswerArray, $studentAnswerRow["Answer"]);
     }
     $jsonReturn;
@@ -189,7 +189,7 @@ function getStudentGrades($user) {
     $query      = "SELECT * WHERE `StudentID` = '".getUserID($user)."' ORDER BY `ID` DESC;";
     $result     = runSQLQuerry($query);
     $gradeArray = array();
-    while($row = $result->fetch_assoc()) {
+    while($row  = $result->fetch_assoc()) {
         $jsonTemp->examID   = $row["ExamID"];
         $jsonTemp->comments = $row["Comments"];
         array_push($gradeArray, json_encode($jsonTemp));
