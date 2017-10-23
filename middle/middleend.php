@@ -223,10 +223,7 @@ $JsonForword->examID = $examID;
 $json = json_encode($jsonForword);
 $post= ['username'=>$username ,'request'=>'SubmitGradedExam', 'payload'=>$json];
 //var_dump($post);
-echo $json;
-
-
-//var_dump( curltobackend($post));
+var_dump( curltobackend($post));
 
 // delete the files after we are done
 //exec("rm ".$Answerfile, $output, $return);
