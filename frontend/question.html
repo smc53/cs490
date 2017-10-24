@@ -24,7 +24,7 @@
 		    	<textarea rows="10" type="text" id="params" class="input-question" placeholder="Type any specific parameters"></textarea><br>
 		    </form>
 		    	
-		    <button type="button" class="color-bold1" onclick="addQuestion()">Add Question</button>
+		    <button type="button" class="button color-bold1" onclick="addQuestion()">Add Question</button>
 		</div> 
 
 		<hr>
@@ -34,10 +34,9 @@
 		</div>
 		<div class="container color-main2 left-align" id="qlist"></div> 
         <div class="center">
-            <button type="button" class="center color-bold1" onclick="removeQuestions()">Remove</button>    
+            <button type="button" class="button center color-bold1" onclick="removeQuestions()">Remove</button>    
         </div>
         
-
 		<script type="text/javascript">
 			function addQuestion(){
 				var xmlhttp = new XMLHttpRequest();
@@ -62,10 +61,9 @@
                 	"params" : ptext
                 };
 
-                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=AddQuestion&username=ttest&payload=" + JSON.stringify(jsonData));
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=AddQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + JSON.stringify(jsonData));
                 xmlhttp.send();
 			}
-
 
             function fillQuestionList(testjson){
                 var json = JSON.parse(testjson);
@@ -82,10 +80,7 @@
                 }
             }
 
-            
-
             function removeQuestions(){
-            	//var checkedValues = new Array();
                 var inputElements = document.getElementsByClassName('qfield');
                 for(var i=0; inputElements[i]; ++i){
                     if(inputElements[i].checked){
@@ -93,7 +88,7 @@
                             "questionID" : inputElements[i].value,
                         }
                         var json = JSON.stringify(jsonData);
-                        alert("REMOVE Q json: " + json);
+                        console.log("REMOVE Q json: " + json);
 
                         var xmlhttp = new XMLHttpRequest();
                         xmlhttp.onreadystatechange = function() {
@@ -101,18 +96,14 @@
                                 window.location.reload(false);
                             }
                         };
-                        xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=RemoveQuestion&username=ttest&payload=" + json);
+                        xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=RemoveQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + json);
                         xmlhttp.send();
                     }
                 }
             }
 
-
-
 			function loadRequest(){
                 var xmlhttp = new XMLHttpRequest();
-                        
-                //response from middle
                 xmlhttp.onreadystatechange = function() {
                     if (this.readyState == 4) {
                         fillQuestionList(this.responseText);
@@ -123,12 +114,9 @@
                 xmlhttp.send();
             }
 
-
             window.onload = function(){
                 loadRequest();
 			}	
-
 		</script>
-
 	</body>
 </html>

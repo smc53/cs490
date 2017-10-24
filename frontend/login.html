@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
     <head>
     	<title>Beta login</title>
         <link href="css/main.css" rel="stylesheet">
@@ -15,45 +14,25 @@
             	<form>
             	<input class="container-item-sm center input-login" type="text" id="username" placeholder="username"><br>
             	<input class="container-item-sm center input-login" type="password" id="passwd" placeholder="password"><br>
-            	<button type="button" class="color-bold1 container-item-md" onclick="loginAttempt()">Submit</button>
+            	<button type="button" class="button color-bold1 container-item-md" onclick="loginAttempt()">Submit</button>
             	</form>
             </div>
         </div>
-
         <hr>
-
-        <div>
-            <a href="instructor.html">instuctor (temp)</a>
-            <a href="student.html">student (temp)</a>
-        </div>
-
         <script>
-
         function loginAttempt() {
             var uname = document.getElementById("username").value;
+            window.localStorage.setItem('username', uname);
             var passwd = document.getElementById("passwd").value;
-
-/*
-            if (uname.length == 0) { 
-                document.getElementById("txtHint").innerHTML = "Enter a username";
-                return;
-            } else if (passwd.length == 0){
-                document.getElementById("txtHint").innerHTML = "Enter a password";
-                return; 
-            }*/
-
-
             var xmlhttp = new XMLHttpRequest();
-            
             //response from middle
             xmlhttp.onreadystatechange = function() {
                 if (this.readyState == 4) {
-                	alert("resp: " + this.responseText);
-                	//(this.responseText);
+                	console.log("resp: " + this.responseText);
                     var resp = JSON.parse(this.responseText);
                     if(resp.type == "F"){
                     	alert("Failed login attempt!");
-                    	//document.getElementById("txtHint").innerHTML = display_text;
+                        return;
                     }
                     if(resp.type == "S"){
                     	window.location = "student.html"
@@ -63,11 +42,9 @@
                     }
                 }
             };
-            xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-login.php?request=Login&username=" + uname + "&password=" + passwd);
+            xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-login.php?request=Login&username=" + window.localStorage.getItem('username') + "&password=" + passwd);
             xmlhttp.send();
-            
         };
-
         </script>
     </body>
 </html>

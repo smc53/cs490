@@ -10,52 +10,149 @@
         <div class="color-main1">
             <a href="student.html" class="color-main1 nav-bar">home</a>
         </div>
-        
-        <div class="center" id="testname">
-            <h1>Test name</h1><hr>
+        <div class="center">
+            <h1 id="testname"></h1><hr>
         </div>
-
 
         <div class="container color-main2 left-align">
             <div class="left-align">
                 <button class="button color-bold1" onclick="prevQuestion()">prev</button>
                 <button class="button color-bold1" onclick="nextQuestion()">next</button>
-                Question #
-
-                <h3>Question text : with more text telling you what the hell to do for this really simple problem</h3>
+                <div id="questionNum"></div>
+                <h3 id="qtext"></h3>
             </div>
         </div>
-
         <div class="container test-container color-main2">
-            <textarea class="input-test" rows="20" placeholder="Type your answer"></textarea>
+            <textarea id="ansbox" class="input-test" rows="20" placeholder="Type your answer..."></textarea>
+        </div>
+        <div class="container left-align">
+            <button class="button color-bold1" onclick="submitTest()">Submit Test</button>
         </div>
 
         <script>
-            function nextQuestion(){
-                alert("goto next question");
+            var testjson;
+            var qarray;
+            var qindex = 0;
+            var answers;
+            var recieveCount = 0;
+
+            function addAnswer(){
+                var jsonData ={
+                    "examID" : window.location.search.substring(1).split("=")[1],
+                    "questionid" : qarray[qindex],
+                    "answer" : document.getElementById("ansbox").value
+                }
+                answers[qindex] = jsonData;
             }
+
+            function nextQuestion(){
+                addAnswer();
+                qindex++;
+                if(qindex >= qarray.length){ qindex = 0;}
+                getQuestion(qindex);
+            }
+
             function prevQuestion(){
-                alert("goto prev question");
+                addAnswer();
+                qindex--;
+                if(qindex < 0) { qindex = qarray.length-1; }
+                getQuestion(qindex);
+            }
+
+            function submitTest(){
+                console.log("SUBMIT");
+                addAnswer();
+                //submit answers
+                for(var k=0;k<answers.length;k++){
+                    console.log("submit " + JSON.stringify(answers[k]));
+                    var xmlhttp = new XMLHttpRequest();
+                    xmlhttp.onreadystatechange = function() {
+                        if (this.readyState == 4) {
+                            console.log("resp : " + this.responseText);
+                            if(this.responseText.indexOf('T') > -1){
+                                recieveCount++;
+                                if(recieveCount >= answers.length){
+                                    console.log("GRADING RECEIVED");
+                                    var xmlhttp3 = new XMLHttpRequest();
+                                    var payload = {
+                                        "examID" : window.location.search.substring(1).split("=")[1]
+                                    };
+                                    xmlhttp3.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=SubmitGrading&username="+ window.localStorage.getItem('username') + "&payload=" + JSON.stringify(payload));
+                                    xmlhttp3.send();
+                                    //location.href = 'student.html';
+                                }
+                            }
+                        }
+                    }
+                    xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=SubmitQuestion&username="+ window.localStorage.getItem('username') + "&payload=" + JSON.stringify(answers[k]));
+                    xmlhttp.send();
+                }
+            }
+
+            function getQuestion(qindex){
+                var xmlhttp2 = new XMLHttpRequest();
+                xmlhttp2.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        if(this.responseText.indexOf('ERROR') !== -1){
+                            alert("Error in GetQuestion response!");
+                            return;
+                        }
+
+                        //fill test info for question 1
+                        var qjson = JSON.parse(this.responseText);
+                        if(qjson.hasOwnProperty("question")){
+                            document.getElementById('qtext').innerHTML = qjson.question;
+                        }
+                        
+                    }
+                };
+                document.getElementById('questionNum').innerHTML = "Question #" + (qindex+1);
+                console.log(answers[qindex]);
+                if(answers[qindex]){
+                    document.getElementById("ansbox").value = answers[qindex].answer;
+                }else{
+                    document.getElementById("ansbox").value = "";
+                }
+                
+                var jsonData = {
+                    "ID" : qarray[qindex]
+                };
+                xmlhttp2.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + JSON.stringify(jsonData));
+                xmlhttp2.send();
             }
 
             window.onload = function(){
-                console.log("testid from url: " + window.location.search.substring(1).split("=")[1]);
-
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function() {
                     if (this.readyState == 4) {
+                        console.log("get test data :" + this.responseText);
                         if(this.responseText.indexOf('ERROR') !== -1){
-                            alert("Error in GetAllTests response!");
+                            alert("Error in GetTestData response!");
                             return;
                         }
+
                         //fill test info for question 1
+                        testjson = JSON.parse(this.responseText);
+                        if(testjson.hasOwnProperty("ids")){
+                            if(testjson.ids === null) {
+                                alert("Error in GetTestData response json!");
+                                return;
+                            }
+                            document.getElementById('testname').innerHTML = testjson.name;
+                            qarray = testjson.ids.split(',');
+                            qindex = 0;
+                            answers = new Array(qarray.length);
+                            document.getElementById('questionNum').innerHTML = "Question #" + (qindex+1);
+                            getQuestion(qindex);
+                        }
+                        
                     }
                 };
 
                 var jsonData = {
                     "examID" : window.location.search.substring(1).split("=")[1]
                 };
-                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetTestData&username=stest&payload=" + JSON.stringify(jsonData));
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetTestData&username="+ window.localStorage.getItem('username') + "&payload=" + JSON.stringify(jsonData));
                 xmlhttp.send();
             }
 

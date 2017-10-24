@@ -24,36 +24,29 @@
 
 		<script type="text/javascript">
 			window.onload = function(){
-				loadRequest();
-				var testjson = '{"tests":["test name 1","another test","impossible test"]}'
-				fillTestList(testjson);
-			}
-
-			function fillTestList(testjson){
-				var json = JSON.parse(testjson);
-
-				var list = document.getElementById("testlist");
-				for(var i = 0; i < json.tests.length; i++){
-					var entry = document.createElement('li');
-					entry.appendChild(document.createTextNode(json.tests[i]));
-					list.appendChild(entry);
-				}
-			}
-
-			function loadRequest(){
 				var xmlhttp = new XMLHttpRequest();
-				        
 				//response from middle
 				xmlhttp.onreadystatechange = function() {
 				    if (this.readyState == 4) {
-				    	console.log(this.responseText)
-				        fillTestList(responseText);
+				    	var json = JSON.parse(this.responseText);
+				    	var list = document.getElementById('testlist');
+				    	console.log(json.grades.length);
+				    	for(var i=0; i<json.grades.length;i++){
+				    		var jsdata = JSON.parse(json.grades[i]);
+		                    var entry = document.createElement('li');
+		                    entry.innerHTML = 'Exam ID: ' + jsdata.examID; 
+		                    list.appendChild(entry);
+		                    var textnode = document.createElement('div');
+		                    textnode.innerHTML = jsdata.comments
+		                    list.appendChild(textnode);
+		                    //list.appendChild(document.createTextNode());
+		                    list.appendChild(document.createElement('br'));
+				    	}
 				    }
 				};
 
-				xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetAllTests");
+				xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetStudentGrades&username=" + window.localStorage.getItem('username'));
 				xmlhttp.send();
-
 			}
 		</script>
 	</body>
