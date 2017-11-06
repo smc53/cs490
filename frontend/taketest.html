@@ -7,27 +7,33 @@
     </head>
 
     <body>
+        <!-- NAV BAR -->
         <div class="color-main1">
             <a href="student.html" class="color-main1 nav-bar">home</a>
         </div>
-        <div class="center">
-            <h1 id="testname"></h1><hr>
-        </div>
 
-        <div class="container color-main2 left-align">
-            <div class="left-align">
-                <button class="button color-bold1" onclick="prevQuestion()">prev</button>
-                <button class="button color-bold1" onclick="nextQuestion()">next</button>
-                <div id="questionNum"></div>
-                <h3 id="qtext"></h3>
+        <!-- MAIN CONTENT -->
+        <div class="main-container">
+            <div class="center">
+                <h1 id="testname"></h1><hr>
+            </div>
+
+            <div class="container color-main2 left-align">
+                <div class="left-align">
+                    <button class="button color-bold1" onclick="prevQuestion()">prev</button>
+                    <button class="button color-bold1" onclick="nextQuestion()">next</button>
+                    <div id="questionNum"></div>
+                    <h3 class="container color-main1" id="qtext"></h3>
+                </div>
+            </div>
+            <div class="container test-container color-main2">
+                <textarea id="ansbox" class="input-test color-main1" rows="15" placeholder="Type your answer..."></textarea>
+            </div>
+            <div class="container left-align">
+                <button class="button color-bold1" onclick="submitTest()">Submit Test</button>
             </div>
         </div>
-        <div class="container test-container color-main2">
-            <textarea id="ansbox" class="input-test" rows="20" placeholder="Type your answer..."></textarea>
-        </div>
-        <div class="container left-align">
-            <button class="button color-bold1" onclick="submitTest()">Submit Test</button>
-        </div>
+        <!-- END MAIN CONTENT -->
 
         <script>
             var testjson;
@@ -39,7 +45,7 @@
             function addAnswer(){
                 var jsonData ={
                     "examID" : window.location.search.substring(1).split("=")[1],
-                    "questionid" : qarray[qindex],
+                    "questionID" : qarray[qindex],
                     "answer" : document.getElementById("ansbox").value
                 }
                 answers[qindex] = jsonData;
@@ -79,7 +85,7 @@
                                     };
                                     xmlhttp3.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=SubmitGrading&username="+ window.localStorage.getItem('username') + "&payload=" + JSON.stringify(payload));
                                     xmlhttp3.send();
-                                    //location.href = 'student.html';
+                                    location.href = 'student.html';
                                 }
                             }
                         }
@@ -106,7 +112,7 @@
                         
                     }
                 };
-                document.getElementById('questionNum').innerHTML = "Question #" + (qindex+1);
+                document.getElementById('questionNum').innerHTML = "Question #" + (qindex+1) + " - [PH QUESTION VALUE]";
                 console.log(answers[qindex]);
                 if(answers[qindex]){
                     document.getElementById("ansbox").value = answers[qindex].answer;
@@ -138,7 +144,7 @@
                                 alert("Error in GetTestData response json!");
                                 return;
                             }
-                            document.getElementById('testname').innerHTML = testjson.name;
+                            document.getElementById('testname').innerHTML = "Test : " + testjson.name;
                             qarray = testjson.ids.split(',');
                             qindex = 0;
                             answers = new Array(qarray.length);

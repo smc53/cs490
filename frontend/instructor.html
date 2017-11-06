@@ -6,26 +6,39 @@
 	</head>
 
 	<body>
+		<!-- NAVBAR -->
 		<div class="color-main1 right-align">
 	        <a href="login.html" class="color-main1 nav-bar">logout</a>
 	    </div>
-		
-		<div class="center">
-			<h1 id="uname"></h1><hr>
-		</div>
-
-		<div class="container color-main2 center">
-			<div>
-				<button class="button color-bold1" onclick="location.href='maketest.html';">Add/Remove Test</button>
-				<button class="button color-bold1" onclick="location.href='question.html';">Add/Remove Question</button>
+	    <!-- MAIN BODY -->
+		<div class="main-container">
+			<div class="center">
+				<h1 id="uname"></h1><hr>
+			</div>
+			<div class="container color-main2 center">
+				<div>
+					<button class="button color-bold1" onclick="location.href='maketest.html';">Create Test</button>
+					<button class="button color-bold1" onclick="location.href='question.html';">Edit Questions</button>
+				</div>
+			</div>
+			<div class="container color-main2 center">
+				<h2><b>Available Tests</b></h2>
+				<table id="testlist" class="left-align">
+					<tr>
+						<th>
+							Test Name
+						</th>
+						<th>
+							Info
+						</th>
+						<th>
+							Actions
+						</th>
+					</tr>		
+				</table>
 			</div>
 		</div>
-
-
-		<div class="container color-main2 center">
-			<h2>Available Tests</h2>
-			<ul id="testlist" class="left-align"></ul>
-		</div>
+		<!-- END MAIN BODY -->
 
 		<script type="text/javascript">
 			
@@ -33,10 +46,84 @@
                 var json = JSON.parse(resp);
                 var list = document.getElementById("testlist");
                 for(var i = 0; i < json.tests.length; i++){
-                    var entry = document.createElement('li');
-                    entry.appendChild(document.createTextNode(JSON.parse(json.tests[i]).name));
+                    var entry = document.createElement('tr');
+
+                    //testname
+                    var testname = document.createElement('td');
+                    testname.innerHTML = JSON.parse(json.tests[i]).name;
+                    entry.appendChild(testname);
+
+                    //info
+                    var info = document.createElement('td');
+                    info.innerHTML = "N/A";
+                    entry.appendChild(info);
+
+                    //actions
+                    var actions = document.createElement('td');
+                    actions.className = "center";
+                    //view grades
+                    //publish
+                    var btn_publish = document.createElement('button');
+                    btn_publish.className = "button color-green  td-actions";
+                    btn_publish.onclick = (function(){
+                    	var id = JSON.parse(json.tests[i]).ID;
+                    	return function(){
+                    		publishTest(id);
+                    	};
+                    })();
+                    btn_publish.innerHTML = "Publish";
+                    actions.appendChild(btn_publish);
+
+                    //delete 
+                    var btn_delete = document.createElement('button');
+                    btn_delete.className = "button color-red td-actions";
+                    btn_delete.onclick = (function(){
+                    	var id = JSON.parse(json.tests[i]).ID;
+                    	return function(){
+                    		deleteTest(id);
+                    	};
+                    })();
+                    btn_delete.innerHTML = "Delete";
+                    actions.appendChild(btn_delete);
+
+                    entry.appendChild(actions);
                     list.appendChild(entry);
                 }
+            }
+
+            
+            function deleteTest(id){
+            	console.log("delete test calls " + id);
+            	var jsonData = {
+                    "ID" : id
+                };
+                var msgjson = JSON.stringify(jsonData);
+                console.log("REMOVE T json: " + msgjson);
+
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        window.location.reload(false);
+                    }
+                };
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=RemoveTests&username=" + window.localStorage.getItem('username') +  "&payload=" + msgjson);
+    			xmlhttp.send();
+    			
+            }
+
+            function publishTest(id){
+            	var jsonData = {
+                    "examID" : id
+                };
+                var msgjson = JSON.stringify(jsonData);
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        //window.location.reload(false);
+                    }
+                };
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=ReleaseGrades&username=" + window.localStorage.getItem('username') +  "&payload=" + msgjson);
+    			xmlhttp.send();
             }
 
             window.onload = function(){

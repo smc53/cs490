@@ -6,38 +6,74 @@
 	</head>
 
 	<body>
+        <!-- NAVBAR -->
 		<div class="color-main1">
 	        <a href="instructor.html" class="color-main1 nav-bar">home</a>
 	    </div>
 
-		<div class="center">
-			<h1>Create a New Test</h1>
-		</div>
+        <!-- MAIN BODY-->
+        <div class="main-container">
+    		<div class="center">
+    			<h1>Create a New Test</h1>
+                <button type="button" class="button color-bold1" onclick="createTest()">Submit</button>
+    		</div>
 
-		<div class="center">
-			<div class="container left-align"><h4>Test Name</h4></div>
-		    <div class="container color-main2 left-align">
-		    	<input class="input-test" id="testname" placeholder="Enter the name of this test">
-		    </div>
-		    
-		    <div class="container left-align"><h4>Select Questions for test</h4></div>
-		    <div class="container color-main2">	
-			    <div class="color-main2 left-align" id="qlist"></div> 
-			</div>
-
-			<button type="button" class="button color-bold1" onclick="createTest()">Submit</button>
-		
-			<hr>
-
-			<div class="center">
-				<h2>Remove Test</h2>
-			</div>
-			<div class="container color-main2 left-align" id="tlist"></div>
-			<button type="button" class="button color-bold1" onclick="removeTest()">Submit</button>
-
-		</div> 
+    		<div class="center">
+    			<div class="container left-align">
+                    <h4>Test Name</h4>
+                    <div class="container color-main2 left-align">
+                        <input class="input-test color-main1" id="testname" placeholder="Enter the name of this test">
+                    </div>
+                </div>
+    		    
+                <div class="container container-col-l">
+                    <div class="container color-main2"> 
+                        <h2 class="center">Available Questions</h2>
+                        <div class="container">
+                            [filter questions placeholder]
+                            <select>Topic</select>
+                            <button type="button" class="button color-bold1" onclick="applyFilter()">Apply</button>
+                            <button type="button" class="button color-bold1" onclick="clearFilter()">Clear</button>
+                        </div>
+                        <table class="color-main2 left-align" id="qlist">
+                            <tr>
+                                <th>
+                                    Question
+                                </th>
+                                <th></th>
+                            </tr>   
+                        </table> 
+                    </div>
+                </div>
+                <div class="container container-col-r">
+                    <div class="container color-main2"> 
+                        <h2 class="center">Current Questions</h2>
+                        <table class="color-main2 left-align" id="clist">
+                            <tr>
+                                <th>
+                                    Question
+                                </th>
+                                <th>
+                                    Value
+                                </th>
+                                <th>
+                                    
+                                </th>
+                            </tr>   
+                        </table> 
+                    </div>
+                </div>
+    			
+    		</div> 
+        </div>
+        <!-- END MAIN BODY -->
 
 		<script>
+            var currentTest = {
+                "name" : null,
+                "qids" : new Array()
+            };
+            var resp;
 
             function createTest(){
             	if(document.getElementById("testname").value.length == 0){
@@ -46,11 +82,8 @@
             	}
 
             	var checkedStr = "";
-            	var inputElements = document.getElementsByClassName('qfield');
-            	for(var i=0; inputElements[i]; ++i){
-            		if(inputElements[i].checked){
-            			checkedStr += inputElements[i].value + ',';
-            		}
+            	for(var i=0; i < currentTest.qids.length; i++){
+            		checkedStr += currentTest.qids[i] + ',';
             	}
             	//stripping last comma
             	checkedStr = checkedStr.substring(0,checkedStr.length-1);
@@ -64,7 +97,6 @@
             		"qid" : checkedStr //selected questions from checkbox
             	}
             	var json = JSON.stringify(jsonData)
-            	console.log(json);
 
             	var xmlhttp = new XMLHttpRequest();
             	xmlhttp.onreadystatechange = function() {
@@ -105,7 +137,6 @@
 				var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function() {
                 	if(this.readyState == 4) {
-                		console.log(this.responseText);
                 		if(this.responseText.indexOf('ERROR') !== -1){
                 			alert("Error in GetQuestions response!");
                 			return;
@@ -116,13 +147,34 @@
 			                var list = document.getElementById("qlist");
 			                for(var i = 0; i < resp.questions.length; i++){
 			                	var qelement = JSON.parse(resp.questions[i]);
-			                    var entry = document.createElement('input');
-			                    entry.className = 'qfield';
-			                    entry.value = qelement.ID;
-			                    entry.type = 'checkbox'
-			                    list.appendChild(entry);
-			                    list.appendChild(document.createTextNode(qelement.question));
-			                    list.appendChild(document.createElement('br'));
+
+                                //check if current test contains this question ID
+                                if(currentTest.qids.includes(qelement.ID)){
+                                    continue;
+                                }
+
+                                var entry = document.createElement('tr');
+                                entry.id = qelement.ID;
+                                //question name
+                                var qname = document.createElement('td');
+                                qname.innerHTML = qelement.question;
+                                entry.appendChild(qname);
+                                //actions
+                                var actions = document.createElement('td');
+                                actions.className = "center";
+                                //add
+                                var btn_add = document.createElement('button');
+                                btn_add.className = "button color-green  td-actions";
+                                btn_add.onclick = (function(){
+                                    var question_info = qelement;
+                                    return function(){
+                                        addQuestion(question_info);
+                                    };
+                                })();
+                                btn_add.innerHTML = "Add";
+                                actions.appendChild(btn_add);
+                                entry.appendChild(actions);
+                                list.appendChild(entry);
 			                }
                 		}
 	                }
@@ -130,37 +182,88 @@
 
 	            xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestions");
                 xmlhttp.send();
+            }
 
-                //Get all Tests on load
-                var xmlhttpTests = new XMLHttpRequest();
-                xmlhttpTests.onreadystatechange = function() {
-                	if(this.readyState == 4) {
-                		console.log(this.responseText);
-                		if(this.responseText.indexOf('ERROR') !== -1){
-                			alert("Error in GetAllTests response!");
-                			return;
-                		}
 
-                		resp = JSON.parse(this.responseText);
-                		if(resp.hasOwnProperty('tests')){
-			                var list = document.getElementById("tlist");
-			                for(var i = 0; i < resp.tests.length; i++){
-			                	var telement = JSON.parse(resp.tests[i]);
-			                    var entry = document.createElement('input');
-			                    entry.className = 'tfield';
-			                    entry.value = telement.ID;
-			                    entry.type = 'checkbox'
-			                    list.appendChild(entry);
-			                    list.appendChild(document.createTextNode(telement.name));
-			                    list.appendChild(document.createElement('br'));
-			                }
-                		}
-	                }
-                };
+            function addQuestion(info){
+                currentTest.qids.push(info.ID);
+                console.log("current test: " + JSON.stringify(currentTest));
 
-	            xmlhttpTests.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetAllTests");
-                xmlhttpTests.send();
-			}	
+                //remove quesiton from available q's
+                var qlist = document.getElementById("qlist");
+                qlist.removeChild(document.getElementById(info.ID));
+
+                //add question to curretn questions
+                var clist = document.getElementById("clist");
+                var row = document.createElement('tr');
+                row.id = info.ID;
+                //question name
+                var rowname = document.createElement('td');
+                rowname.innerHTML = info.question;
+                row.appendChild(rowname);
+                //point value of question
+                var point = document.createElement('td');
+                point.innerHTML = "10";
+                point.className = "center";
+                row.appendChild(point);
+                //actions
+                var btns = document.createElement('td');
+                btns.className = "center";
+                //add
+                var btn_rm = document.createElement('button');
+                btn_rm.className = "button color-red  td-actions";
+                btn_rm.onclick = (function(){
+                    var question_info = info;
+                    return function(){
+                        removeQuestion(question_info);
+                    };
+                })();
+                btn_rm.innerHTML = "Remove";
+                btns.appendChild(btn_rm);
+                row.appendChild(btns);
+                clist.appendChild(row);
+            }
+
+
+            function removeQuestion(info){
+                console.log("remove info: " + info.ID);
+                if(currentTest.qids.indexOf(info.ID) > -1){
+                    console.log("test");
+                    currentTest.qids.splice(currentTest.qids.indexOf(info.ID), 1);
+                }
+                console.log("current test: " + JSON.stringify(currentTest));
+
+                //remove quesiton from available q's
+                var clist = document.getElementById("clist");
+                clist.removeChild(document.getElementById(info.ID));
+
+                //add question to curretn questions
+                var qlist = document.getElementById("qlist");
+                var row = document.createElement('tr');
+                row.id = info.ID;
+                //question name
+                var rowname = document.createElement('td');
+                rowname.innerHTML = info.question;
+                row.appendChild(rowname);
+                //actions
+                var btns = document.createElement('td');
+                btns.className = "center";
+                //add
+                var btn_rm = document.createElement('button');
+                btn_rm.className = "button color-green  td-actions";
+                btn_rm.onclick = (function(){
+                    var question_info = info;
+                    return function(){
+                        addQuestion(question_info);
+                    };
+                })();
+                btn_rm.innerHTML = "Add";
+                btns.appendChild(btn_rm);
+                row.appendChild(btns);
+                qlist.appendChild(row);
+            }
+
+
 
 		</script>
 	</body>

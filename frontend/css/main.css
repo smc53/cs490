@@ -3,7 +3,8 @@ html{box-sizing:border-box}*,*:before,*:after{box-sizing:inherit}
 html{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}
 body{
   margin:0;
-  margin-top:16px;
+  background-color:#333;
+  color:white;
 }
 html,body{
   font-family:Verdana,sans-serif;
@@ -48,33 +49,56 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
   border-radius: 8px;
 }
 .input-test{
-  padding: 0 5px;
+  padding: 6px;
   display:block;
   border:none;
   border-bottom:1px; 
   solid #ccc;
   width:100%;
   height:100%;
-  resize: none
+  resize: none;
 }
-.select{padding:9px 0;width:100%;border:none;border-bottom:1px solid #ccc}
+
 .container:after,.container:before
 .top,.bottom{position:fixed;width:100%;z-index:1}.top{top:0}.bottom{bottom:0}
 .left-align{text-align:left!important}.right-align{text-align:right!important}.justify{text-align:justify!important}.center{text-align:center!important}
 .button:hover{color:#000!important;background-color:#ccc!important}
-.container{
-  padding: 16px;
-  margin-right:70px;
-  margin-left:70px;
-  margin-bottom: 8px;
-  border-radius: 32px;
-}
-.container-item-sm{margin: 4px;}
-.container-item-md{margin-top: 12px;}
 .nav-bar{
   margin-right:70px;
   margin-left:70px;
 }
+.main-container{
+  margin-right:70px;
+  margin-left:70px;
+  margin-bottom: 8px;
+}
+.container{
+  padding: 16px;
+  border-radius: 32px;
+  margin-bottom: 16px;
+}
+.container-col-l{
+  width: 50%;
+  float:left;
+}
+.container-col-r{
+  margin-left:50%;
+}
+.container-item-sm{margin: 4px;}
+.container-item-md{margin-top: 12px;}
+.container-row{
+  width:100%;
+}
+
+.topic-select{
+  padding:0px 4px;
+  width:200px;
+  border:none;
+  border-bottom:1px 
+  solid #ccc
+}
+
+
 .test-container{
   height:500px;
   padding: 16px;
@@ -89,17 +113,50 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
   border-bottom:1px; 
   solid #ccc;
 }
+table,th,tr{
+  border: 1px solid black;
+}
+th,td{
+  padding: 10px;
+}
+table{
+  width:100%;
+}
+tr:nth-child(even){
+  color:#fff!important;
+  background-color: #2c3e50;
+}
+tr:nth-child(odd){
+  color:#fff!important;
+  background-color: #19242e;
+}
+th {
+  text-align: center;
+}
+th:nth-child(1){
+  width:50%;
+}
+.td-actions{
+  margin-right: 10px;
+}
+
+
 /* COLORS */
 .color-main1{color:#fff!important;background-color:#2c3e50!important}
 .color-main2{color:#000!important;background-color:#6dbcdb!important}
 .color-bold1{color:#fff!important;background-color:#fc4349!important}
 .color-sec1{color:#000!important;background-color:#fff!important}
 .color-sec2{color:#000!important;background-color:#d7dadb!important}
+.color-red{color:#fff!important; background-color:#f11!important;}
+.color-green{color:#fff!important; background-color:#1a1!important;}
 
 /*
 
 References:
 https://www.w3schools.com/w3css/4/w3.css
 Nicolas Gallagher and Jonathan Neal git.io/normalize
+
+Star Rating:
+https://stackoverflow.com/questions/8118266/integrating-css-star-rating-into-an-html-form
 
 */

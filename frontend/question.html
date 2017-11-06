@@ -6,38 +6,70 @@
 	</head>
 
 	<body>
-		<div class="color-main1">
-	        <a href="instructor.html" class="color-main1 nav-bar">home</a>
-	    </div>
-
-		<div class="center">
-			<h2>Add a Question</h2><hr>
-		</div>
-
-		<div class="container center color-main2">
-		    <form class="left-align">
-		    	Question<br>
-		    	<textarea rows="10" type="text" id="question" class="input-question" placeholder="Type your question"></textarea><br>
-		    	Answer<br>
-		    	<textarea rows="10" type="text" id="answer" class="input-question" placeholder="Type the answer"></textarea><br>
-				Parameters<br>
-		    	<textarea rows="10" type="text" id="params" class="input-question" placeholder="Type any specific parameters"></textarea><br>
-		    </form>
-		    	
-		    <button type="button" class="button color-bold1" onclick="addQuestion()">Add Question</button>
-		</div> 
-
-		<hr>
-
-		<div class="center">
-			<h2>Remove Questions</h2><hr>
-		</div>
-		<div class="container color-main2 left-align" id="qlist"></div> 
-        <div class="center">
-            <button type="button" class="button center color-bold1" onclick="removeQuestions()">Remove</button>    
+        <!-- NAVBAR -->
+        <div class="color-main1">
+            <a href="instructor.html" class="color-main1 nav-bar">home</a>
         </div>
-        
+
+        <!-- MAIN BODY -->
+        <div class="main-container">
+            <!--left questions -->
+            <div class="container container-col-l">
+        		<div class="container center color-main2">
+                    <h2><b>Add a Question</b></h2><hr>
+        		    <form class="left-align">
+        		    	Question<br>
+        		    	<textarea rows="10" type="text" id="question" class="input-question color-main1" placeholder="Type your question"></textarea><br>
+        		    	Test Cases<br>
+        		    	<textarea rows="5" type="text" id="answer" class="input-question color-main1" placeholder="Type the test cases"></textarea><br>
+        				Parameters<br>
+        		    	<textarea rows="5" type="text" id="params" class="input-question color-main1" placeholder="Type any specific parameters"></textarea><br>
+        		    </form><hr>
+                    <div class="rating centercontainer-row">
+                        <div class="container-col-l">
+                            Topic 
+                            <select id="topic-menu" class="topic-select">
+                                <option value="none">none</option>
+                            </select>
+                        </div>
+                        <div class="container-col-r">
+                            Difficulty 
+                            <select id="diff-menu">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                    </div><hr>
+        		    <button type="button" class="button color-green" onclick="addQuestion()">Add Question</button>
+        		</div> 
+            </div>
+
+            <!-- right available qquestions -->
+            <div class="container container-col-r">
+                <div class="container color-main2 left-align">
+                    <h2 class="center"><b>Current Questions</b></h2><hr>
+                    <table class="color-main2 left-align" id="qlist">
+                        <tr>
+                            <th>
+                                Question
+                            </th>
+                            <th>
+                                Info
+                            </th>
+                            <th>
+                            </th>
+                        </tr>   
+                    </table> 
+                </div> 
+            </div>
+        </div>
+        <!-- END MAIN -->
+
 		<script type="text/javascript">
+
 			function addQuestion(){
 				var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function() {
@@ -55,52 +87,88 @@
                     return;
                 }
 
+                var tags = {
+                    "topic" :  document.getElementById('topic-menu').value,
+                    "difficulty" : document.getElementById('diff-menu').value
+                }
                 var jsonData = {
                 	"question" : qtext,
                 	"answer" : atext,
-                	"params" : ptext
+                	"params" : ptext,
+                    "tags" : tags
                 };
-
+                console.log("asdfadf " + JSON.stringify(jsonData));
                 xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=AddQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + JSON.stringify(jsonData));
                 xmlhttp.send();
 			}
 
-            function fillQuestionList(testjson){
-                var json = JSON.parse(testjson);
+            function fillQuestionList(resp){
+                var json = JSON.parse(resp);
                 var list = document.getElementById("qlist");
                 for(var i = 0; i < json.questions.length; i++){
-                    var qelement = JSON.parse(json.questions[i]);
-                    var entry = document.createElement('input');
-                    entry.className = 'qfield';
-                    entry.value = qelement.ID;
-                    entry.type = 'checkbox';
-                    list.appendChild(entry);
-                    list.appendChild(document.createTextNode(qelement.question));
-                    list.appendChild(document.createElement('br'));
-                }
-            }
+                    var entry = document.createElement('tr');
 
-            function removeQuestions(){
-                var inputElements = document.getElementsByClassName('qfield');
-                for(var i=0; inputElements[i]; ++i){
-                    if(inputElements[i].checked){
-                        var jsonData = {
-                            "questionID" : inputElements[i].value,
-                        }
-                        var json = JSON.stringify(jsonData);
-                        console.log("REMOVE Q json: " + json);
+                    //q name
+                    var qname = document.createElement('td');
+                    qname.innerHTML = JSON.parse(json.questions[i]).question;
+                    entry.appendChild(qname);
 
-                        var xmlhttp = new XMLHttpRequest();
-                        xmlhttp.onreadystatechange = function() {
-                            if (this.readyState == 4) {
-                                window.location.reload(false);
-                            }
+                    //info
+                    var qinfo = document.createElement('td');
+                    qinfo.innerHTML = "N/A";
+                    entry.appendChild(qinfo);
+
+                    //actions
+                    var actions = document.createElement('td');
+                    actions.className = "center";
+                    //edit 
+                    var btn_e = document.createElement('button');
+                    btn_e.className = "button color-green td-actions";
+                    btn_e.onclick = (function(){
+                        var id = JSON.parse(json.questions[i]).ID;
+                        return function(){
+                            editQuestion(id);
                         };
-                        xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=RemoveQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + json);
-                        xmlhttp.send();
-                    }
+                    })();
+                    btn_e.innerHTML = "Edit";
+                    actions.appendChild(btn_e);
+
+                    //delete 
+                    var btn_delete = document.createElement('button');
+                    btn_delete.className = "button color-red td-actions";
+                    btn_delete.onclick = (function(){
+                        var id = JSON.parse(json.questions[i]).ID;
+                        return function(){
+                            deleteQuestion(id);
+                        };
+                    })();
+                    btn_delete.innerHTML = "Delete";
+                    actions.appendChild(btn_delete);
+
+                    entry.appendChild(actions);
+                    list.appendChild(entry);
                 }
             }
+
+            function deleteQuestion(id){
+                var xmlhttp = new XMLHttpRequest();
+                    var jsonData = {
+                        "questionID" : id
+                    }
+                    var json = JSON.stringify(jsonData);
+                    xmlhttp.onreadystatechange = function() {
+                        if (this.readyState == 4) {
+                            window.location.reload(false);
+                        }
+                    };
+                    xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=RemoveQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + json);
+                    xmlhttp.send();
+            }
+
+            function editQuestion(info){
+                console.log("Edit question - " + info);
+            }
+
 
 			function loadRequest(){
                 var xmlhttp = new XMLHttpRequest();
@@ -117,6 +185,7 @@
             window.onload = function(){
                 loadRequest();
 			}	
+
 		</script>
 	</body>
 </html>

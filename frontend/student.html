@@ -4,46 +4,84 @@
 	<head>
 		<title>Student page</title>
 		<link href="css/main.css" rel="stylesheet">
-		<script type="text/javascript" src=js/main.js></script>
 	</head>
 
 	<body>
+        <!-- NAVBAR -->
 		<div class="color-main1 right-align">
 	        <a href="login.html" class="color-main1 nav-bar ">logout</a>
 	    </div>
 		
-		<div class="center">
-			<h1 id='uname'></h1><hr>
-		</div>
-
-		<div class="container color-main2 center">
-			<div>
-				<div class="container color-main2 center">
-					<form id="testlist" class="left-align"></form>
-					<button type="button" class="button color-bold1" onclick="taketest()" >Take Test</button>
-				</div>
-				
-				<button type="button" class="button color-bold1" onclick="location.href='grades.html';" >View Grades</button>
-			</div>
-		</div>
+        <!-- MAIN CONTENT -->
+        <div class="main-container">
+    		<div class="center">
+    			<h1 id='uname'></h1><hr>
+    		</div>
+            <div class="container container-col-l">  
+                <div class="container color-main2 ">
+                    <h2 class="center"><b>Tests</b></h2>
+                    <table class="color-main2 left-align" id="tlist">
+                        <tr>
+                            <th>
+                                Test Name
+                            </th>
+                            <th>
+                            </th>
+                        </tr>   
+                    </table> 
+                </div>
+            </div>
+            <div class="container container-col-r">  
+                <div class="container color-main2 ">
+                    <h2 class="center"><b>Grades</b></h2>
+                    <table class="color-main2 left-align" id="glist">
+                        <tr>
+                            <th>
+                                Test Name
+                            </th>
+                            <th>
+                            </th>
+                        </tr>   
+                    </table> 
+                </div>
+            </div>
+        </div>
+        <!-- END MAIN CONTENT -->
 
 		<script>
-
-			function fillTestList(resp){
+            function fillTestList(resp){
                 var json = JSON.parse(resp);
-                var list = document.getElementById("testlist");
+                var list = document.getElementById("tlist");
                 for(var i = 0; i < json.tests.length; i++){
-                    var telement = JSON.parse(json.tests[i]);
-                    var entry = document.createElement('input');
-                    entry.className = 'tfield';
-                    entry.value = telement.ID;
-                    entry.type = 'radio';
-                    entry.name = 'testradion';
+                    var entry = document.createElement('tr');
+
+                    //testname
+                    var testname = document.createElement('td');
+                    testname.innerHTML = JSON.parse(json.tests[i]).name;
+                    entry.appendChild(testname);
+                    //actions
+                    var actions = document.createElement('td');
+                    actions.className = "center";
+                    //take test
+                    var btn_test = document.createElement('button');
+                    btn_test.className = "button color-green  td-actions";
+                    btn_test.onclick = (function(){
+                        var id = JSON.parse(json.tests[i]).ID;
+                        return function(){
+                            location.href = 'taketest.html?testid=' + id;
+                        };
+                    })();
+                    btn_test.innerHTML = "Start";
+                    actions.appendChild(btn_test);
+
+                    entry.appendChild(actions);
                     list.appendChild(entry);
-                    list.appendChild(document.createTextNode(telement.name));
-                    list.appendChild(document.createElement('br'));
+
+
+                    //view grades
                 }
             }
+
 
             function taketest(){
             	//get radio button id
