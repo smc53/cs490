@@ -13,22 +13,14 @@
 
         <!-- MAIN BODY-->
         <div class="main-container">
-    		<div class="center">
-    			<h1>Create a New Test</h1>
-                <button type="button" class="button color-bold1" onclick="createTest()">Submit</button>
-    		</div>
+    		
 
     		<div class="center">
-    			<div class="container left-align">
-                    <h4>Test Name</h4>
-                    <div class="container color-main2 left-align">
-                        <input class="input-test color-main1" id="testname" placeholder="Enter the name of this test">
-                    </div>
-                </div>
+    			
     		    
                 <div class="container container-col-l">
                     <div class="container color-main2"> 
-                        <h2 class="center">Available Questions</h2>
+                        <h1 class="center"><b>Available Questions</b></h1><hr>
                         <div class="container">
                             [filter questions placeholder]
                             <select>Topic</select>
@@ -47,7 +39,17 @@
                 </div>
                 <div class="container container-col-r">
                     <div class="container color-main2"> 
-                        <h2 class="center">Current Questions</h2>
+                        <div class="center">
+                            <h1><b>Create a New Test</b></h1><hr>
+                            <button type="button" class="button color-bold1" onclick="createTest()">Submit</button>
+                        </div>
+                        <div class="container left-align">
+                            <h4>Test Name</h4>
+                            <div class="color-main2 left-align">
+                                <input class="input-test color-main1" id="testname" placeholder="Enter the name of this test">
+                            </div>
+                        </div>
+                        <h4 class="center">Current Questions</h4>
                         <table class="color-main2 left-align" id="clist">
                             <tr>
                                 <th>

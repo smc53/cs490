@@ -11,37 +11,59 @@
 	        <a href="student.html" class="color-main1 nav-bar">home</a>
 	    </div>
 		
-		<div class="center">
-			<h1>Available Grades</h1><hr>
-		</div>
-
-		<div class="container color-main2 left-align">
-			<div class="container color-main2 center">
-				<ul id="testlist" class="left-align"></ul>
+		<div class="main-container">
+			<div class="center">
+				<h1><b>View Test Grade</b></h1><hr>
+			</div>
+			<div class="container color-main2 left-align">
+				<h2 id="testname" class="center"></h2>
+				<div class="container color-main2 center">
+					<table id="testlist">
+						<tr>
+							<th>
+								Question
+							</th>
+							<th>
+								Score
+							</th>
+							<th>
+								Comments
+							</th>
+						</tr>	
+					</table>
+				</div>
 			</div>
 		</div>
-
 
 		<script type="text/javascript">
 			window.onload = function(){
 				var xmlhttp = new XMLHttpRequest();
-				//response from middle
 				xmlhttp.onreadystatechange = function() {
 				    if (this.readyState == 4) {
 				    	var json = JSON.parse(this.responseText);
 				    	var list = document.getElementById('testlist');
-				    	console.log(json.grades.length);
+
+				    	var grade_idx;
 				    	for(var i=0; i<json.grades.length;i++){
-				    		var jsdata = JSON.parse(json.grades[i]);
-		                    var entry = document.createElement('li');
-		                    entry.innerHTML = 'Exam ID: ' + jsdata.examID; 
-		                    list.appendChild(entry);
-		                    var textnode = document.createElement('div');
-		                    textnode.innerHTML = jsdata.comments
-		                    list.appendChild(textnode);
-		                    //list.appendChild(document.createTextNode());
-		                    list.appendChild(document.createElement('br'));
+				    		console.log(JSON.parse(json.grades[i]).examID);
+				    		if(JSON.parse(json.grades[i]).examID === (window.location.search.substring(1).split("=")[1]) ){
+				    			grade_idx = i;
+				    			break;
+				    		}	
 				    	}
+				    	var grade = JSON.parse(json.grades[grade_idx]);
+				    	document.getElementById('testname').appendChild(document.createTextNode(grade.examID + " [PH, need test name here]"));
+
+	                    var entry = document.createElement('td');
+	                    entry.innerHTML = '[PH, need a q name here] '; 
+	                    list.appendChild(entry);
+
+	                    var score = document.createElement('td');
+	                    score.innerHTML = '[PH, score]'; 
+	                    list.appendChild(score);
+	                    var cmt_td = document.createElement('td');
+	                    cmt_td.innerHTML = '[PH, comments need to be broken up by question] ' + grade.comments; 
+	                    list.appendChild(cmt_td);
 				    }
 				};
 

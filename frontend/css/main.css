@@ -89,6 +89,14 @@ textarea{margin-top: 2px;}
 .container-row{
   width:100%;
 }
+.login-container{
+  width: 50%;
+  margin-left:25%;
+  margin-right:25%;
+}
+.login-body{
+  margin-top: 8%;
+}
 
 .topic-select{
   padding:0px 4px;
@@ -97,7 +105,6 @@ textarea{margin-top: 2px;}
   border-bottom:1px 
   solid #ccc
 }
-
 
 .test-container{
   height:500px;

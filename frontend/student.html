@@ -76,9 +76,44 @@
 
                     entry.appendChild(actions);
                     list.appendChild(entry);
+                }
+            }
 
 
-                    //view grades
+            function fillGradeList(resp){
+                var json = JSON.parse(resp);
+                var list = document.getElementById("glist");
+                for(var i = 0; i < json.grades.length; i++){
+                    console.log(json.grades[i]);
+                    console.log(JSON.parse(json.grades[i]).released);
+                    console.log(JSON.parse(json.grades[i]).released === "1");
+                    var entry = document.createElement('tr');
+
+                    //testname
+                    var testname = document.createElement('td');
+                    testname.innerHTML = JSON.parse(json.grades[i]).examID;
+                    entry.appendChild(testname);
+                    //actions
+                    var actions = document.createElement('td');
+                    actions.className = "center";
+                    if(JSON.parse(json.grades[i]).released === "1"){//view grades
+                        var btn_grade = document.createElement('button');
+                        btn_grade.className = "button color-bold1 td-actions";
+                        btn_grade.onclick = (function(){
+                            var id = JSON.parse(json.grades[i]).examID;
+                            return function(){
+                                location.href = 'grades.html?testid=' + id;
+                            };
+                        })();
+                        btn_grade.innerHTML = "View Grade";
+                        actions.appendChild(btn_grade);    
+                    }else{//pending
+                        var pending_txt = document.createTextNode("Pending...")
+                        pending_txt.className = "td-actions";
+                        actions.appendChild(pending_txt); 
+                    }
+                    entry.appendChild(actions);
+                    list.appendChild(entry);
                 }
             }
 
@@ -102,11 +137,12 @@
 				//fill username
             	document.getElementById('uname').appendChild(document.createTextNode('Welcome ' + window.localStorage.getItem('username') + '!'));
 
+                //fill tests
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function() {
                     if (this.readyState == 4) {
                     	if(this.responseText.indexOf('ERROR') !== -1){
-                			alert("Error in GetAllTests response!");
+                			console.error("Error in GetAllTests response!");
                 			return;
                 		}
                         fillTestList(this.responseText);
@@ -115,6 +151,21 @@
 
                 xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetAllTests");
                 xmlhttp.send();
+
+                //fill grades
+                var xmlhttp2 = new XMLHttpRequest();
+                xmlhttp2.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        if(this.responseText.indexOf('ERROR') !== -1){
+                            console.error("Error in GetGrades response!");
+                            return;
+                        }
+                        fillGradeList(this.responseText);
+                    }
+                };
+
+                xmlhttp2.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetStudentGrades&username=" + window.localStorage.getItem('username'));
+                xmlhttp2.send();
 			}
 
 		</script>
