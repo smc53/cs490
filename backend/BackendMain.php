@@ -72,7 +72,8 @@ function addQuestionToBank($user, $payload) {
     $metadata = $payload["params"];
     $question = $payload["question"];
     $answer   = $payload["answer"];
-    $query    = "INSERT INTO `QuestionBank`(`CreatorID`, `Metadata`, `Question`, `ExpectedOutput`) VALUES ('".$user."', '".$metadata."', '".$question."', '".$answer."');";
+    $tags     = $payload["tags"];
+    $query    = "INSERT INTO `QuestionBank`(`CreatorID`, `Metadata`, `Question`, `ExpectedOutput`, `Tags`) VALUES ('".$user."', '".$metadata."', '".$question."', '".$answer."', '".$tags."');";
     runSQLQuerry($query);
     return 'T';
 }
@@ -83,6 +84,7 @@ function getQuestions() {
     while($row = $result->fetch_assoc()) {
         $jsonTemp->ID       = $row["ID"];
         $jsonTemp->question = $row["Question"];
+        $jsonTemp->tags     = $row["Tags"];
         array_push($questionArray, json_encode($jsonTemp));
     }
     $jsonReturn;
@@ -138,7 +140,7 @@ function deleteQuestionFromBank($user, $payload) {
     return 'T';
 }
 function submitQuestion($user, $payload) {
-    $query = "INSERT INTO `CompletedExaminations`(`StudentID`, `ExamID`, `QuestionID`, `Answer`) VALUES ('".$user."', '".$payload["testid"]."', '".$payload["questionid"]."', '".$payload["answer"]."');";
+    $query = "INSERT INTO `CompletedExaminations`(`StudentID`, `ExamID`, `QuestionID`, `Answer`) VALUES ('".getUserID($user)."', '".$payload["examID"]."', '".$payload["questionID"]."', '".$payload["answer"]."');";
     runSQLQuerry($query);
     return 'T';
 }
@@ -179,25 +181,27 @@ function submitGradedExam($user, $payload) {
     return 'T';
 }
 function releaseGrades($user, $payload) {
-    $query  = "UPDATE `Grades` SET `Released`=1 WHERE 'ExamID' = '".$payload["examID"]."';";
+    $query  = "UPDATE `Grades` SET `Released` = 1 WHERE `ExamID` = '".$payload["examID"]."';";
     runSQLQuerry($query);
     return 'T';
 }
 function getStudentExamGrade($user, $payload) {
-    $query  = "SELECT * FROM `Grades`WHERE `Released` = 1 AND `StudentID` = '".getUserID($user)."' AND `ExamID` = '".$payload["examID"]."' ORDER BY `ID` DESC;";
+    $query  = "SELECT * FROM `Grades` WHERE `StudentID` = '".getUserID($user)."' AND `ExamID` = '".$payload["examID"]."' ORDER BY `ID` DESC;";
     $result = runSQLQuerry($query);
     $row    =  $examResult->fetch_assoc();
     $jsonReturn;
     $jsonReturn->comments = $row["Comments"];
+    $jsonReturn->released = $row["Released"];
     return json_encode($jsonReturn);
 }
 function getStudentGrades($user) {
-    $query      = "SELECT * FROM `Grades` WHERE `Released` = 1 AND `StudentID` = '".getUserID($user)."' ORDER BY `ID` DESC;";
+    $query      = "SELECT * FROM `Grades` WHERE `StudentID` = '".getUserID($user)."' ORDER BY `ID` DESC;";
     $result     = runSQLQuerry($query);
     $gradeArray = array();
     while($row  = $result->fetch_assoc()) {
         $jsonTemp->examID   = $row["ExamID"];
         $jsonTemp->comments = $row["Comments"];
+        $jsonTemp->released = $row["Released"];
         array_push($gradeArray, json_encode($jsonTemp));
     }
     $jsonReturn;
@@ -211,6 +215,7 @@ function getGradesForExam($payload) {
     while($row  = $result->fetch_assoc()) {
         $jsonTemp->studentID    = $row["StudentID"];
         $jsonTemp->comments     = $row["Comments"];
+        $jsonnTemp->released     = $row["Released"];
         array_push($gradeArray, json_encode($jsonTemp));
     }
     $jsonReturn;
@@ -232,5 +237,8 @@ function getUserID($username) {
     $result = runSQLQuerry($query);
     $row    = $result->fetch_assoc();
     return $row["ID"];
+}
+function sqlAppend() {
+    return "', '";
 }
 ?>
