@@ -94,7 +94,7 @@
                             }
                         }
                     }
-                    xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=SubmitQuestion&username="+ window.localStorage.getItem('username') + "&payload=" + JSON.stringify(answers[k]));
+                    xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=SubmitQuestion&username="+ window.localStorage.getItem('username') + "&payload=" + encodeURIComponent(JSON.stringify(answers[k])));
                     xmlhttp.send();
                 }
             }

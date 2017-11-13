@@ -95,8 +95,8 @@
                     "tags" : "topic$"+document.getElementById('topic-menu').value 
                         + ",difficulty$"+document.getElementById('diff-menu').value
                 };
-                console.log("asdfadf " + JSON.stringify(jsonData));
-                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=AddQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + JSON.stringify(jsonData));
+                var strjson = encodeURIComponent(JSON.stringify(jsonData));
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=AddQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + strjson);
                 xmlhttp.send();
 			}
 
