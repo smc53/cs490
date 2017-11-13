@@ -45,7 +45,7 @@
             function addAnswer(){
                 var jsonData ={
                     "examID" : window.location.search.substring(1).split("=")[1],
-                    "questionID" : qarray[qindex],
+                    "questionID" : qarray[qindex].qid,
                     "answer" : document.getElementById("ansbox").value
                 }
                 answers[qindex] = jsonData;
@@ -55,14 +55,14 @@
                 addAnswer();
                 qindex++;
                 if(qindex >= qarray.length){ qindex = 0;}
-                getQuestion(qindex);
+                getQuestion(qindex, JSON.parse(testjson.questions)[qindex].maxPoints);
             }
 
             function prevQuestion(){
                 addAnswer();
                 qindex--;
                 if(qindex < 0) { qindex = qarray.length-1; }
-                getQuestion(qindex);
+                getQuestion(qindex, JSON.parse(testjson.questions)[qindex].maxPoints);
             }
 
             function submitTest(){
@@ -80,12 +80,16 @@
                                 if(recieveCount >= answers.length){
                                     console.log("GRADING RECEIVED");
                                     var xmlhttp3 = new XMLHttpRequest();
+                                    xmlhttp3.onreadystatechange = function(){
+                                        if (this.readyState == 4) {
+                                            location.href = 'student.html';
+                                        }
+                                    }
                                     var payload = {
                                         "examID" : window.location.search.substring(1).split("=")[1]
                                     };
                                     xmlhttp3.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=SubmitGrading&username="+ window.localStorage.getItem('username') + "&payload=" + JSON.stringify(payload));
                                     xmlhttp3.send();
-                                    location.href = 'student.html';
                                 }
                             }
                         }
@@ -95,7 +99,7 @@
                 }
             }
 
-            function getQuestion(qindex){
+            function getQuestion(qindex, value){
                 var xmlhttp2 = new XMLHttpRequest();
                 xmlhttp2.onreadystatechange = function() {
                     if (this.readyState == 4) {
@@ -109,11 +113,12 @@
                         if(qjson.hasOwnProperty("question")){
                             document.getElementById('qtext').innerHTML = qjson.question;
                         }
+
                         
                     }
                 };
-                document.getElementById('questionNum').innerHTML = "Question #" + (qindex+1) + " - [PH QUESTION VALUE]";
-                console.log(answers[qindex]);
+                document.getElementById('questionNum').innerHTML = "Question #" + (qindex+1) + " - Points : " + value;
+                
                 if(answers[qindex]){
                     document.getElementById("ansbox").value = answers[qindex].answer;
                 }else{
@@ -121,8 +126,9 @@
                 }
                 
                 var jsonData = {
-                    "ID" : qarray[qindex]
+                    "ID" : qarray[qindex].qid
                 };
+                console.log(jsonData);
                 xmlhttp2.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + JSON.stringify(jsonData));
                 xmlhttp2.send();
             }
@@ -139,17 +145,16 @@
 
                         //fill test info for question 1
                         testjson = JSON.parse(this.responseText);
-                        if(testjson.hasOwnProperty("ids")){
-                            if(testjson.ids === null) {
+                        if(testjson.hasOwnProperty("questions")){
+                            if(testjson.questions === null) {
                                 alert("Error in GetTestData response json!");
                                 return;
                             }
                             document.getElementById('testname').innerHTML = "Test : " + testjson.name;
-                            qarray = testjson.ids.split(',');
+                            qarray = JSON.parse(testjson.questions);
                             qindex = 0;
                             answers = new Array(qarray.length);
-                            document.getElementById('questionNum').innerHTML = "Question #" + (qindex+1);
-                            getQuestion(qindex);
+                            getQuestion(qindex, JSON.parse(testjson.questions)[qindex].maxPoints);
                         }
                         
                     }

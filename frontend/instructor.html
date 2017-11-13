@@ -17,7 +17,7 @@
 			</div>
 			<div class="container color-main2 center">
 				<div>
-					<button class="button color-bold1" onclick="location.href='maketest.html';">Create Test</button>
+					<button class="button color-bold1" onclick="location.href='maketest.html?filter=none';">Create Test</button>
 					<button class="button color-bold1" onclick="location.href='question.html';">Edit Questions</button>
 				</div>
 			</div>
@@ -74,6 +74,18 @@
                     btn_publish.innerHTML = "Publish";
                     actions.appendChild(btn_publish);
 
+                    //grades
+                    var btn_grades = document.createElement('button');
+                    btn_grades.className = "button color-bold1  td-actions";
+                    btn_grades.onclick = (function(){
+                    	var id = JSON.parse(json.tests[i]).ID;
+                    	return function(){
+                    		viewGrade(id);
+                    	};
+                    })();
+                    btn_grades.innerHTML = "Grades";
+                    actions.appendChild(btn_grades);
+
                     //delete 
                     var btn_delete = document.createElement('button');
                     btn_delete.className = "button color-red td-actions";
@@ -124,6 +136,10 @@
                 };
                 xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=ReleaseGrades&username=" + window.localStorage.getItem('username') +  "&payload=" + msgjson);
     			xmlhttp.send();
+            }
+
+            function viewGrade(id){
+
             }
 
             window.onload = function(){

@@ -20,7 +20,7 @@
         		    <form class="left-align">
         		    	Question<br>
         		    	<textarea rows="10" type="text" id="question" class="input-question color-main1" placeholder="Type your question"></textarea><br>
-        		    	Test Cases<br>
+        		    	Answers<br>
         		    	<textarea rows="5" type="text" id="answer" class="input-question color-main1" placeholder="Type the test cases"></textarea><br>
         				Parameters<br>
         		    	<textarea rows="5" type="text" id="params" class="input-question color-main1" placeholder="Type any specific parameters"></textarea><br>
@@ -87,15 +87,13 @@
                     return;
                 }
 
-                var tags = {
-                    "topic" :  document.getElementById('topic-menu').value,
-                    "difficulty" : document.getElementById('diff-menu').value
-                }
+                
                 var jsonData = {
                 	"question" : qtext,
                 	"answer" : atext,
                 	"params" : ptext,
-                    "tags" : tags
+                    "tags" : "topic$"+document.getElementById('topic-menu').value 
+                        + ",difficulty$"+document.getElementById('diff-menu').value
                 };
                 console.log("asdfadf " + JSON.stringify(jsonData));
                 xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=AddQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + JSON.stringify(jsonData));
@@ -115,7 +113,11 @@
 
                     //info
                     var qinfo = document.createElement('td');
-                    qinfo.innerHTML = "N/A";
+                    var strinfo = JSON.parse(json.questions[i]).tags;
+                    //strinfo.replace(/\$/g, ' : ');
+                    console.log(strinfo);
+                    //strinfo.replace(/,/g, ',\n');
+                    qinfo.innerHTML = strinfo;
                     entry.appendChild(qinfo);
 
                     //actions
@@ -125,9 +127,22 @@
                     var btn_e = document.createElement('button');
                     btn_e.className = "button color-green td-actions";
                     btn_e.onclick = (function(){
-                        var id = JSON.parse(json.questions[i]).ID;
+                        var info = JSON.parse(json.questions[i]);
                         return function(){
-                            editQuestion(id);
+                            editQuestion(info);
+                            var jsonData = {
+                                "ID" : info.ID,
+                                "hidden" : "1"
+                            }
+                            var payload = JSON.stringify(jsonData);
+                            var xmlhttp = new XMLHttpRequest();
+                            xmlhttp.onreadystatechange = function() {
+                                if (this.readyState == 4) {
+                                    //window.location.reload(false);
+                                }
+                            };
+                            xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=ToggleQuestionHiddenState&username=" + window.localStorage.getItem('username') + "&payload=" + payload);
+                            xmlhttp.send();
                         };
                     })();
                     btn_e.innerHTML = "Edit";
@@ -152,21 +167,26 @@
 
             function deleteQuestion(id){
                 var xmlhttp = new XMLHttpRequest();
-                    var jsonData = {
-                        "questionID" : id
+                var jsonData = {
+                    "questionID" : id
+                }
+                var json = JSON.stringify(jsonData);
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        window.location.reload(false);
                     }
-                    var json = JSON.stringify(jsonData);
-                    xmlhttp.onreadystatechange = function() {
-                        if (this.readyState == 4) {
-                            window.location.reload(false);
-                        }
-                    };
-                    xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=RemoveQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + json);
-                    xmlhttp.send();
+                };
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=RemoveQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + json);
+                xmlhttp.send();
             }
 
             function editQuestion(info){
                 console.log("Edit question - " + info);
+                document.getElementById('question').innerHTML = info.question;
+                document.getElementById('answer').innerHTML = info.output;
+                document.getElementById('params').innerHTML = info.metadata;
+                //document.getElementById('topic-menu').value = ;
+                //document.getElementById('diff-menu').value = ;
             }
 
 
@@ -180,10 +200,40 @@
 
                 xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestions");
                 xmlhttp.send();
+
+                var xmlhttp2 = new XMLHttpRequest();
+                xmlhttp2.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        var json = JSON.parse(this.responseText);
+
+                    }
+                };
+
+                xmlhttp2.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestionTopics");
+                xmlhttp2.send();
             }
 
             window.onload = function(){
                 loadRequest();
+
+                var xmlhttp3 = new XMLHttpRequest();
+                xmlhttp3.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        var json = JSON.parse(this.responseText);
+                        var topicmenu = document.getElementById("topic-menu");
+                        for(var i=0; i<json.topics.length; i++){
+                            var opt = document.createElement('option');
+                            opt.innerHTML = json.topics[i];
+                            topicmenu.appendChild(opt);
+                            if(window.location.search.substring(1).split("=")[1] === json.topics[i]){
+                                topicmenu.value = json.topics[i];
+                            }
+                        }
+                    }
+                };
+
+                xmlhttp3.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestionTopics");
+                xmlhttp3.send();
 			}	
 
 		</script>

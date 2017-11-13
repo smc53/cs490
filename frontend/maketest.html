@@ -22,8 +22,10 @@
                     <div class="container color-main2"> 
                         <h1 class="center"><b>Available Questions</b></h1><hr>
                         <div class="container">
-                            [filter questions placeholder]
-                            <select>Topic</select>
+                            Topics
+                            <select id="topic-menu" class="topic-select">
+                                <option>none</option>
+                            </select>
                             <button type="button" class="button color-bold1" onclick="applyFilter()">Apply</button>
                             <button type="button" class="button color-bold1" onclick="clearFilter()">Clear</button>
                         </div>
@@ -83,22 +85,27 @@
             		return;
             	}
 
-            	var checkedStr = "";
+            	var questionarray = new Array();
             	for(var i=0; i < currentTest.qids.length; i++){
-            		checkedStr += currentTest.qids[i] + ',';
+                    var qjson = {
+                        "qid" : currentTest.qids[i],
+                        "maxPoints" : document.getElementById("qid," + currentTest.qids[i]).value
+                    }
+            		questionarray.push(qjson);
             	}
             	//stripping last comma
-            	checkedStr = checkedStr.substring(0,checkedStr.length-1);
-            	if(checkedStr.length == 0) {
+            	//checkedStr = checkedStr.substring(0,checkedStr.length-1);
+            	if(questionarray.length == 0) {
             		alert("Select questions for test!");
             		return;
             	}
 
             	var jsonData = {
             		"testname" : document.getElementById("testname").value,
-            		"qid" : checkedStr //selected questions from checkbox
+            		"questions" : questionarray //selected questions from checkbox
             	}
             	var json = JSON.stringify(jsonData)
+                console.log(json);
 
             	var xmlhttp = new XMLHttpRequest();
             	xmlhttp.onreadystatechange = function() {
@@ -182,8 +189,35 @@
 	                }
                 };
 
-	            xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestions");
+                var payarray = new Array();
+                payarray.push("topic$"+window.location.search.substring(1).split("=")[1]);
+                var payload = {
+                    "filter" : payarray
+                }
+
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestions&username=" + window.localStorage.getItem('username') +  "&payload=" + JSON.stringify(payload));;
                 xmlhttp.send();
+
+
+                var xmlhttp2 = new XMLHttpRequest();
+                xmlhttp2.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        var json = JSON.parse(this.responseText);
+                        var topicmenu = document.getElementById("topic-menu");
+                        for(var i=0; i<json.topics.length; i++){
+                            var opt = document.createElement('option');
+                            opt.innerHTML = json.topics[i];
+                            topicmenu.appendChild(opt);
+                            if(window.location.search.substring(1).split("=")[1] === json.topics[i]){
+                                topicmenu.value = json.topics[i];
+                            }
+                        }
+                    }
+                };
+
+                xmlhttp2.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestionTopics");
+                xmlhttp2.send();
+
             }
 
 
@@ -205,7 +239,12 @@
                 row.appendChild(rowname);
                 //point value of question
                 var point = document.createElement('td');
-                point.innerHTML = "10";
+                var textvalue = document.createElement('textarea');
+                textvalue.className = "center test-value-input";
+                textvalue.rows = 1;
+                textvalue.value = "10";
+                textvalue.id = "qid," + info.ID;
+                point.appendChild(textvalue);
                 point.className = "center";
                 row.appendChild(point);
                 //actions
@@ -265,6 +304,13 @@
                 qlist.appendChild(row);
             }
 
+            function applyFilter(){
+                location.href = 'maketest.html?filter=' + document.getElementById('topic-menu').value;
+            }
+
+            function clearFilter(){
+                location.href = 'maketest.html?filter=none';
+            }
 
 
 		</script>

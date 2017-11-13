@@ -100,12 +100,16 @@ textarea{margin-top: 2px;}
 
 .topic-select{
   padding:0px 4px;
-  width:200px;
+  width:150px;
   border:none;
   border-bottom:1px 
   solid #ccc
 }
-
+.test-value-input{
+  width:100%;
+  height:100%;
+  resize: none;
+}
 .test-container{
   height:500px;
   padding: 16px;
