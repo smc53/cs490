@@ -19,19 +19,20 @@ if(isset($_POST["request"])) {
         case "Login"                : $output = attemptLogin($username, $password);          break;                      
         case "AddQuestion"          : $output = addQuestionToBank($username, $payload);      break;
         case "RemoveQuestion"       : $output = deleteQuestionFromBank($username, $payload); break;
-        case "GetQuestions"         : $output = getQuestions();                              break;
+        case "GetQuestions"         : $output = getQuestions($payload);                      break;
         case "GetAllTests"          : $output = getAllTests();                               break;
         case "AddTest"              : $output = addTest($username, $payload);                break;
         case "RemoveTests"          : $output = removeTests($username, $payload);            break;      
         case "GetTestData"          : $output = getTestData($payload);                       break; 
         case "GetQuestion"          : $output = getSingleQuestion($payload);                 break;     
-        case "SubmitQuestion"       : $output = submitQuestion($username, $payload);         break;  
+        case "SubmitQuestion"       : $output = submitCompletedQuestion($username, $payload);break;  
         case "GetCompletedExam"     : $output = getCompletedExam($username, $payload);       break;     
         case "SubmitGradedExam"     : $output = submitGradedExam($username, $payload);       break; 
         case "GetGradesForExam"     : $output = getGradesForExam($payload);                  break;  
         case "GetStudentGrades"     : $output = getStudentGrades($username);                 break;     
         case "GetStudentExamGrade"  : $output = getStudentExamGrade($user, $payload);        break;
         case "ReleaseGrades"        : $output = releaseGrades($user, $payload);              break;
+        case "GetQuestionTopics"    : $output = getQuestionTopics();                         break;
         default                     : $output = "**ERROR Unsupported request.**";            break;
     }
     echo $output;
@@ -77,18 +78,27 @@ function addQuestionToBank($user, $payload) {
     runSQLQuerry($query);
     return 'T';
 }
-function getQuestions() {
-    $query          = "SELECT * FROM `QuestionBank`;";
+function getQuestions($payload) {
+    $query          = "SELECT * FROM `QuestionBank`";
+
+    if($payload["filter"][0] != "topic\$none") {
+        $additionalSearch = " WHERE `Tags` LIKE '%".$payload["filter"][0]."%';";
+        $query = $query.$additionalSearch;
+    }
+    
     $result         = runSQLQuerry($query);
     $questionArray  = array();
     while($row = $result->fetch_assoc()) {
         $jsonTemp->ID       = $row["ID"];
         $jsonTemp->question = $row["Question"];
+        $jsonTemp->metadata = $row["Metadata"];
+        $jsonTemp->output   = $row["ExpectedOutput"];
         $jsonTemp->tags     = $row["Tags"];
         array_push($questionArray, json_encode($jsonTemp));
     }
     $jsonReturn;
     $jsonReturn->questions  = $questionArray;
+    $jsonReturn->filter =  $payload["filter"][0];
     return json_encode($jsonReturn);
 }
 function getAllTests() {
@@ -98,7 +108,7 @@ function getAllTests() {
     while($row  = $result->fetch_assoc()) {
         $jsonTemp->ID        = $row["ID"];
         $jsonTemp->name      = $row["Name"];
-        $jsonTemp->questions = $row["QuestionIDs"];
+        $jsonTemp->questions = $row["Questions"];
         array_push($testArray, json_encode($jsonTemp));
     }
     $jsonReturn;
@@ -110,8 +120,8 @@ function getTestData($payload) {
     $result           = runSQLQuerry($query);
     $row              = $result->fetch_assoc();
     $jsonReturn;
-    $jsonReturn->ids  = $row["QuestionIDs"];
-    $jsonReturn->name = $row["Name"];
+    $jsonReturn->name       = $row["Name"];
+    $jsonReturn->questions  = $row["Questions"];
     return json_encode($jsonReturn);
 }
 function getSingleQuestion($payload) {
@@ -123,7 +133,7 @@ function getSingleQuestion($payload) {
     return json_encode($jsonReturn);
 }
 function addTest($user, $payload) {
-    $query  = "INSERT INTO `ConfiguredExaminations`(`CreatorID`, `Name`, `QuestionIDs`) VALUES ('".$user."', '".$payload["testname"]."', '".$payload["qid"] ."');";
+    $query  = "INSERT INTO `ConfiguredExaminations`(`CreatorID`, `Name`, `Questions`) VALUES ('".$user."', '".$payload["testname"]."', '".json_encode($payload["questions"])."');";
     $result = runSQLQuerry($query);
     return 'T';
 }
@@ -139,7 +149,7 @@ function deleteQuestionFromBank($user, $payload) {
     runSQLQuerry($query);
     return 'T';
 }
-function submitQuestion($user, $payload) {
+function submitCompletedQuestion($user, $payload) {
     $query = "INSERT INTO `CompletedExaminations`(`StudentID`, `ExamID`, `QuestionID`, `Answer`) VALUES ('".getUserID($user)."', '".$payload["examID"]."', '".$payload["questionID"]."', '".$payload["answer"]."');";
     runSQLQuerry($query);
     return 'T';
@@ -150,22 +160,23 @@ function getCompletedExam($user, $payload) {
     $examQuery          = "SELECT * FROM `ConfiguredExaminations` WHERE `ID` = ".$examID.";";
     $examResult         = runSQLQuerry($examQuery);
     $examRow            = $examResult->fetch_assoc();
-    $questionCSV        = $examRow["QuestionIDs"];
-    $questionIDList     = explode(',', $questionCSV);
+    $questions          = json_decode($examRow["Questions"], true);
     $questionArray      = array();
     $correctAnswerArray = array();
     $metadataArray      = array();
     $studentAnswerArray = array();
-    foreach($questionIDList as $questionID) {
-        $questionQuery       = "SELECT * FROM `QuestionBank` WHERE `ID` = '".$questionID."';";
-        $questionResult      = runSQLQuerry($questionQuery);
-        $questionRow         = $questionResult->fetch_assoc();
-        array_push($questionArray, $questionRow["Question"]);
+    foreach($questions as $currentQuestionInfo) {
+        $questionQuery              = "SELECT * FROM `QuestionBank` WHERE `ID` = '".$currentQuestionInfo["qid"]."';";
+        $questionResult             = runSQLQuerry($questionQuery);
+        $questionRow                = $questionResult->fetch_assoc();
+        $fullQuestion->question     = $questionRow["Question"];
+        $fullQuestion->questionInfo = $currentQuestionInfo;
+        array_push($questionArray, json_encode($fullQuestion));
         array_push($correctAnswerArray, $questionRow["ExpectedOutput"]);
         array_push($metadataArray, $questionRow["Metadata"]);
-        $studentAnswerQuery  = "SELECT `Answer` FROM `CompletedExaminations` WHERE `ExamID` = '".$examID."' AND `QuestionID` = '".$questionID."' AND `StudentID` = '".$studentID."' ORDER BY `ID` DESC;";
-        $studentAnswerResult = runSQLQuerry($studentAnswerQuery);
-        $studentAnswerRow    = $studentAnswerResult->fetch_assoc();
+        $studentAnswerQuery         = "SELECT `Answer` FROM `CompletedExaminations` WHERE `ExamID` = '".$examID."' AND `QuestionID` = '".$currentQuestionInfo["qid"]."' AND `StudentID` = '".$studentID."' ORDER BY `ID` DESC;";
+        $studentAnswerResult        = runSQLQuerry($studentAnswerQuery);
+        $studentAnswerRow           = $studentAnswerResult->fetch_assoc();
         array_push($studentAnswerArray, $studentAnswerRow["Answer"]);
     }
     $jsonReturn;
@@ -176,7 +187,7 @@ function getCompletedExam($user, $payload) {
     return json_encode($jsonReturn);
 }
 function submitGradedExam($user, $payload) {
-    $query  = "INSERT INTO `Grades`(`StudentID`, `ExamID`, `Comments`) VALUES ('".getUserID($user)."', '".$payload["examID"]."', '".$payload["comments"]."')";
+    $query  = "INSERT INTO `Grades`(`StudentID`, `ExamID`, `Comments`) VALUES ('".getUserID($user)."', '".$payload["examID"]."', '".$payload["scores"]."', '".$payload["comments"]."')";
     runSQLQuerry($query);
     return 'T';
 }
@@ -190,6 +201,7 @@ function getStudentExamGrade($user, $payload) {
     $result = runSQLQuerry($query);
     $row    =  $examResult->fetch_assoc();
     $jsonReturn;
+    $jsonReturn->scores   = $row["Scores"];
     $jsonReturn->comments = $row["Comments"];
     $jsonReturn->released = $row["Released"];
     return json_encode($jsonReturn);
@@ -199,6 +211,7 @@ function getStudentGrades($user) {
     $result     = runSQLQuerry($query);
     $gradeArray = array();
     while($row  = $result->fetch_assoc()) {
+        $jsonTemp->scores   = $row["Scores"];
         $jsonTemp->examID   = $row["ExamID"];
         $jsonTemp->comments = $row["Comments"];
         $jsonTemp->released = $row["Released"];
@@ -214,12 +227,35 @@ function getGradesForExam($payload) {
     $gradeArray = array();
     while($row  = $result->fetch_assoc()) {
         $jsonTemp->studentID    = $row["StudentID"];
+        $jsonTemp->scores       = $row["Scores"];
         $jsonTemp->comments     = $row["Comments"];
-        $jsonnTemp->released     = $row["Released"];
+        $jsonnTemp->released    = $row["Released"];
         array_push($gradeArray, json_encode($jsonTemp));
     }
     $jsonReturn;
     $jsonReturn->grades  = $gradeArray;
+    return json_encode($jsonReturn);
+}
+function getQuestionTopics() {
+    $query          = "SELECT `Tags` FROM `QuestionBank`;";
+    $result         = runSQLQuerry($query);
+    //$regex        = preg_quote("topic\$.*?(,|$)");
+    $topicArray     = array();
+
+    while($row = $result->fetch_assoc()) {
+        $tags       = $row["Tags"];
+        $tagArray   = split(',', $tags);
+        foreach ($tagArray as $curr) {
+            $trimmedTag = trim($curr);
+            if (0 === strpos($trimmedTag, 'topic$')) {
+                $topic = str_replace("topic$", "", $trimmedTag);
+                if(array_search($topic, $topicArray) === FALSE) {
+                    array_push($topicArray, $topic);
+                }
+            }
+        }
+    }
+    $jsonReturn->topics  = $topicArray;
     return json_encode($jsonReturn);
 }
 /******************************** Library Functions **************************************/
