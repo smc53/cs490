@@ -85,22 +85,20 @@
                 var list = document.getElementById("glist");
                 for(var i = 0; i < json.grades.length; i++){
                     console.log(json.grades[i]);
-                    console.log(JSON.parse(json.grades[i]).released);
-                    console.log(JSON.parse(json.grades[i]).released === "1");
                     var entry = document.createElement('tr');
 
                     //testname
                     var testname = document.createElement('td');
-                    testname.innerHTML = JSON.parse(json.grades[i]).examName;
+                    testname.innerHTML = json.grades[i].examName;
                     entry.appendChild(testname);
                     //actions
                     var actions = document.createElement('td');
                     actions.className = "center";
-                    if(JSON.parse(json.grades[i]).released === "1"){//view grades
+                    if(json.grades[i].released === "1"){//view grades
                         var btn_grade = document.createElement('button');
                         btn_grade.className = "button color-bold1 td-actions";
                         btn_grade.onclick = (function(){
-                            var id = JSON.parse(json.grades[i]).examID;
+                            var id = json.grades[i].examID;
                             return function(){
                                 location.href = 'grades.html?testid=' + id;
                             };

@@ -7,33 +7,17 @@
 	</head>
 
 	<body>
-		<div class="color-main1">
-	        <a href="student.html" class="color-main1 nav-bar">home</a>
-	    </div>
-		
-		<div class="main-container">
-			<div class="center">
-				<h1><b>View Test Grade</b></h1><hr>
-			</div>
-			<div class="container color-main2 left-align">
-				<h2 id="testname" class="center"></h2>
-				<div class="container color-main2 center">
-					<table id="testlist">
-						<tr>
-							<th>
-								Question
-							</th>
-							<th>
-								Score
-							</th>
-							<th>
-								Comments
-							</th>
-						</tr>	
-					</table>
-				</div>
-			</div>
+		<!-- NAVBAR -->
+        <div class="color-main1">
+            <a href="student.html" class="color-main1 nav-bar">home</a>
+        </div>
+	    <!-- MAIN BODY -->
+		<div class="main-container" id="main">
+            <div class="center">
+                <h1 id="examname"></h1><hr>
+            </div>
 		</div>
+		<!-- END MAIN BODY -->
 
 		<script type="text/javascript">
 			window.onload = function(){
@@ -41,6 +25,7 @@
 				xmlhttp.onreadystatechange = function() {
 				    if (this.readyState == 4) {
 				    	var json = JSON.parse(this.responseText);
+				    	console.log(json);
 				    	var list = document.getElementById('testlist');
 
 				    	var grade_idx;
@@ -71,6 +56,105 @@
 				xmlhttp.send();
 			}
 		</script>
+
+		<script type="text/javascript">
+
+            window.onload = function(){
+                var xmlhttp = new XMLHttpRequest();
+                //response from middle
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        if(this.responseText.indexOf('ERROR') !== -1){
+                            alert("Error in GetAllTests response!");
+                            return;
+                        }
+                        var json = JSON.parse(this.responseText);
+				    	console.log(json);
+				    	var list = document.getElementById('testlist');
+
+				    	var grade_idx;
+				    	for(var i=0; i<json.grades.length;i++){
+				    		console.log(json.grades[i].examID);
+				    		if(json.grades[i].examID === (window.location.search.substring(1).split("=")[1]) ){
+				    			grade_idx = i;
+				    			break;
+				    		}	
+				    	}
+
+				    	//fill test name
+                        document.getElementById('examname').appendChild(document.createTextNode('Test Grades : ' + json.grades[grade_idx].examName));
+
+                        var container = document.getElementById('main');
+                        console.log(json.grades[grade_idx])
+                        var stud_div = document.createElement('div');
+                        stud_div.className = "container color-main2";
+                        stud_div.innerHTML = "Student: " + json.grades[grade_idx].studentName;
+                        container.appendChild(stud_div);
+
+                        for(var j=0; j<json.grades[grade_idx].questions.length; j++){
+                            var qdiv = document.createElement('div');
+                            qdiv.className = "container color-main1";
+
+                            //question text
+                            var q_div = document.createElement('div');
+                            var q_div_id = i+json.grades[grade_idx].questions[j].qid
+                            q_div.id = q_div_id;
+                            qdiv.appendChild(q_div);
+
+                            var xmlhttp_question = new XMLHttpRequest();
+                            xmlhttp_question.onreadystatechange = function() {
+                                var xml_qid = q_div_id;
+                                console.log("xml " + q_div_id + " " + xml_qid);
+                                if (this.readyState == 4) {
+                                    if(this.responseText.indexOf('ERROR') !== -1){
+                                        alert("Error in GetQuestion response!");
+                                        return;
+                                    }
+
+                                    //fill test info for question 1
+                                    var question_json = JSON.parse(this.responseText);
+                                    console.log("xml2 " + JSON.stringify(question_json));
+                                    if(question_json.hasOwnProperty("question")){
+                                        document.getElementById(q_div_id).innerHTML = question_json.question;
+                                    }
+                                }
+                            };
+                            var qdata = {
+                                "ID" : json.grades[i].questions[j].qid
+                            };
+                            xmlhttp_question.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + JSON.stringify(qdata));
+                            xmlhttp_question.send();
+
+                            qdiv.appendChild(document.createElement('hr'));
+                            qdiv.appendChild(document.createTextNode("Score: " + json.grades[grade_idx].questions[j].score + " / " + json.grades[grade_idx].questions[j].maxScore));
+                            qdiv.appendChild(document.createElement('hr'));
+                            if(json.grades[i].questions[j].answer !== null){
+                                qdiv.appendChild(document.createTextNode(json.grades[grade_idx].questions[j].answer));
+                            }else{
+                                qdiv.appendChild(document.createTextNode("NONE"));
+                            }
+                            
+                            qdiv.appendChild(document.createElement('hr'));
+                            var comment_div = document.createElement('div');
+                            comment_div.innerHTML = json.grades[grade_idx].questions[j].comments;
+                            qdiv.appendChild(comment_div);
+                            qdiv.appendChild(document.createElement('hr'));
+
+                            stud_div.appendChild(qdiv);
+                        }
+                        
+                        
+                        
+                    }
+                };
+                var payload = {
+                    "examID" : window.location.search.substring(1).split("=")[1]
+                }
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetStudentGrades&username=" + window.localStorage.getItem('username'));
+				xmlhttp.send();
+            }
+		</script>
 	</body>
 </html>
+
 
