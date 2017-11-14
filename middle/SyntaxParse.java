@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////
+//   SyntaxParse.java                        //
 //   Mateusz Stolarz                         //
 //   UCID: mss86                             //
-//   SyntaxParse.java                        //
 ///////////////////////////////////////////////
 import java.util.regex.*;
 import java.util.function.*;  
@@ -237,7 +237,7 @@ public class SyntaxParse{
          }
          else return true;
       }
-      else if(ExpressionSign()){
+      else if(ExpressionSign()||Stringexp()){  // modified today added || Stringexp()
          if(Con1()){
             if(Condition()){
                return true;
@@ -486,12 +486,17 @@ public class SyntaxParse{
    public static boolean List(){
       if(i<len&&s[i].equals("[")){
          i++;
+         int I = i;
          if(Listinput()){
             if(i<len&&s[i].equals("]")){
                i++;
                return true;
             }
-         }
+         i=I;
+         }else if(i<len&&s[i].equals("]")){
+               i++;
+               return true;
+            }
       } 
    return false;
    }
