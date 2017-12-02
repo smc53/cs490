@@ -8,9 +8,17 @@
 	<body>
         <!-- NAVBAR -->
         <div class="color-main1">
-            <a href="instructor.html" class="color-main1 nav-bar">home</a>
+            <div class="navbar">
+                <div class="navbar-left">
+                    <a class="color-main1" href="instructor.html">HOME</a>
+                    <a class="color-main1" href="maketest.html?filter=none">Create Test</a>
+                    <a class="color-main1" href="question.html">Questions</a>
+                </div>
+                <div class="navbar-right">
+                    <a class="color-main1" href="login.html">logout</a>
+                </div>
+            </div>
         </div>
-
         <!-- MAIN BODY -->
         <div class="main-container">
             <!--left questions -->
@@ -29,7 +37,7 @@
                         <div class="container-col-l">
                             Topic 
                             <select id="topic-menu" class="topic-select">
-                                <option value="none">none</option>
+                                <option value="none">None</option>
                             </select>
                         </div>
                         <div class="container-col-r">
@@ -114,9 +122,8 @@
                     //info
                     var qinfo = document.createElement('td');
                     var strinfo = JSON.parse(json.questions[i]).tags;
-                    //strinfo.replace(/\$/g, ' : ');
-                    console.log(strinfo);
-                    //strinfo.replace(/,/g, ',\n');
+                    strinfo = strinfo.replace(/\$/g, ' : ');
+                    strinfo = strinfo.replace(/,/g, '\n');
                     qinfo.innerHTML = strinfo;
                     entry.appendChild(qinfo);
 

@@ -8,7 +8,16 @@
 	<body>
 		<!-- NAVBAR -->
         <div class="color-main1">
-            <a href="instructor.html" class="color-main1 nav-bar">home</a>
+            <div class="navbar">
+                <div class="navbar-left">
+                    <a class="color-main1" href="instructor.html">HOME</a>
+                    <a class="color-main1" href="maketest.html?filter=none">Create Test</a>
+                    <a class="color-main1" href="question.html">Questions</a>
+                </div>
+                <div class="navbar-right">
+                    <a class="color-main1" href="login.html">logout</a>
+                </div>
+            </div>
         </div>
 	    <!-- MAIN BODY -->
 		<div class="main-container" id="main">
@@ -19,6 +28,22 @@
 		<!-- END MAIN BODY -->
 
 		<script type="text/javascript">
+
+            function editSubmit(q,s,c,st,ex,r){
+                console.log("click ");
+                var xmlhttp2 = new XMLHttpRequest();
+                var payload = {
+                    "qid" : q,
+                    "score" : Number(s.value),
+                    "comment" : c.value.replace(/\n/g, '<br>'),
+                    "studentID" : st,
+                    "examID" : ex,
+                    "released" : r
+                };
+                console.log("EDITS " + JSON.stringify(payload));
+                xmlhttp2.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=EditGradesForExam&username=" + window.localStorage.getItem('username')+ "&payload=" + encodeURIComponent(JSON.stringify(payload)));
+                xmlhttp2.send();
+            }
 
             window.onload = function(){
                 var xmlhttp = new XMLHttpRequest();
@@ -46,33 +71,8 @@
 
                                 //question text
                                 var q_div = document.createElement('div');
-                                var q_div_id = i+json.grades[i].questions[j].qid
-                                q_div.id = q_div_id;
+                                q_div.innerHTML = json.grades[i].questions[j].questionContent;
                                 qdiv.appendChild(q_div);
-
-                                var xmlhttp_question = new XMLHttpRequest();
-                                xmlhttp_question.onreadystatechange = function() {
-                                    var xml_qid = q_div_id;
-                                    console.log("xml " + q_div_id + " " + xml_qid);
-                                    if (this.readyState == 4) {
-                                        if(this.responseText.indexOf('ERROR') !== -1){
-                                            alert("Error in GetQuestion response!");
-                                            return;
-                                        }
-
-                                        //fill test info for question 1
-                                        var question_json = JSON.parse(this.responseText);
-                                        console.log("xml2 " + JSON.stringify(question_json));
-                                        if(question_json.hasOwnProperty("question")){
-                                            document.getElementById(q_div_id).innerHTML = question_json.question;
-                                        }
-                                    }
-                                };
-                                var qdata = {
-                                    "ID" : json.grades[i].questions[j].qid
-                                };
-                                xmlhttp_question.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + JSON.stringify(qdata));
-                                xmlhttp_question.send();
 
                                 qdiv.appendChild(document.createElement('hr'));
                                 qdiv.appendChild(document.createTextNode("Score: "));
@@ -86,7 +86,14 @@
                                 qdiv.appendChild(document.createTextNode(" / " + json.grades[i].questions[j].maxScore));
                                 qdiv.appendChild(document.createElement('hr'));
                                 if(json.grades[i].questions[j].answer !== null){
-                                    qdiv.appendChild(document.createTextNode(json.grades[i].questions[j].answer));
+                                    var str_ans = json.grades[i].questions[j].answer;//.replace(/\n/g, '<br>')
+                                    //var div_ans = document.createElement('div');
+                                    //div_ans.innerHTML = str_ans;
+                                    //qdiv.appendChild(div_ans);
+
+                                    var pre_tag = document.createElement('pre');
+                                    pre_tag.appendChild(document.createTextNode(str_ans));
+                                    qdiv.appendChild(pre_tag);
                                 }else{
                                     qdiv.appendChild(document.createTextNode("NONE"));
                                 }
@@ -106,35 +113,21 @@
                                 var edit_btn = document.createElement('button');
                                 edit_btn.className = "color-bold1 button";
                                 edit_btn.innerHTML = "Edit";
-                                var studentID = json.grades[i].studentID;
-                                var examID = window.location.search.substring(1).split("=")[1];
-                                var released = json.grades[i].released;
-                                edit_btn.onclick = function(){
-                                    console.log("edit question");
-
-                                    var score = score_div;
-                                    var comment = comment_div;
+                                 
+                                edit_btn.onclick = (function(q2,s2,c2,st2,ex2,r2){
+                                    console.log("test ");
+                                    return function(){
+                                        editSubmit(q2,s2,c2,st2,ex2,r2);
+                                    }
+                                    
+                                })(json.grades[i].questions[j].qid,
+                                    score_div,
+                                    comment_div,
+                                    json.grades[i].studentID,
+                                    window.location.search.substring(1).split("=")[1],
+                                    json.grades[i].released);
                                     
 
-                                    //return function(){
-                                        var xmlhttp2 = new XMLHttpRequest();
-                                        xmlhttp2.onreadystatechange = function() {
-                                            if (this.readyState == 4) {
-
-                                            }
-                                        }
-                                        var payload = {
-                                            "scores" : [score_div.value],
-                                            "comments" : [comment_div.value.replace(/\n/g, '<br>')],
-                                            "studentID" : studentID,
-                                            "examID" : examID,
-                                            "released" : released
-                                        };
-                                        console.log("EDITS " + JSON.stringify(payload));
-                                        xmlhttp2.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=EditGradesForExam&username=" + window.localStorage.getItem('username')+ "&payload=" + JSON.stringify(payload));
-                                        xmlhttp2.send();
-                                    //};
-                                }
                                 qdiv.appendChild(edit_btn);
                                 stud_div.appendChild(qdiv);
                             }
@@ -152,6 +145,8 @@
                 xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetGradesForExam&username="+ window.localStorage.getItem('username')+ "&payload=" + JSON.stringify(payload));
                 xmlhttp.send();
             }
+
+            
 		</script>
 	</body>
 </html>

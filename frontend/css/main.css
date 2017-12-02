@@ -16,6 +16,12 @@ h1{font-size:36px}h2{font-size:30px}h3{font-size:24px}h4{font-size:20px}h5{font-
 h1,h2,h3,h4,h5,h6{font-family:"Segoe UI",Arial,sans-serif;font-weight:400;margin:10px 0}
 hr{border:0;border-top:1px solid #eee;margin:20px 0}
 textarea{margin-top: 2px;}
+a:hover{
+  color:#fff!important;
+}
+a{
+  color:#eee!important;
+}
 .centered tr th,.centered tr td{text-align:center}
 .button{
   border-radius: 8px;
@@ -63,9 +69,20 @@ textarea{margin-top: 2px;}
 .top,.bottom{position:fixed;width:100%;z-index:1}.top{top:0}.bottom{bottom:0}
 .left-align{text-align:left!important}.right-align{text-align:right!important}.justify{text-align:justify!important}.center{text-align:center!important}
 .button:hover{color:#000!important;background-color:#ccc!important}
-.nav-bar{
-  margin-right:70px;
-  margin-left:70px;
+.navbar {
+  position: relative;
+  min-height: 50px;
+  border: 1px solid transparent;
+  margin-right : 70px;
+  margin-left: 70px;
+  font-size:28px;
+}
+.navbar-left{
+  float: left;
+  padding-right : 20px;
+}
+.navbar-right{
+  float: right;
 }
 .main-container{
   margin-right:70px;
@@ -111,7 +128,7 @@ textarea{margin-top: 2px;}
   resize: none;
 }
 .test-container{
-  height:500px;
+  height:350px;
   padding: 16px;
 }
 .test-column{

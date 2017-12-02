@@ -9,12 +9,20 @@
 	<body>
 		<!-- NAVBAR -->
         <div class="color-main1">
-            <a href="student.html" class="color-main1 nav-bar">home</a>
-        </div>
+            <div class="navbar">
+                <div class="navbar-left">
+                    <a class="color-main1" href="student.html">HOME</a>
+                </div>
+                <div class="navbar-right">
+                    <a class="color-main1" href="login.html">logout</a>
+                </div>
+            </div>
+	    </div>
 	    <!-- MAIN BODY -->
 		<div class="main-container" id="main">
             <div class="center">
-                <h1 id="examname"></h1><hr>
+                <h1 id="examname"></h1>
+                <h3 id="examgrade"></h3><hr>
             </div>
 		</div>
 		<!-- END MAIN BODY -->
@@ -83,7 +91,8 @@
 
 				    	//fill test name
                         document.getElementById('examname').appendChild(document.createTextNode('Test Grades : ' + json.grades[grade_idx].examName));
-
+                        //fill exam grade
+                        document.getElementById('examgrade').appendChild(document.createTextNode('Score : ' + json.grades[grade_idx].score + '/' + json.grades[grade_idx].maxScore + ' (' + (100* json.grades[grade_idx].score / json.grades[grade_idx].maxScore) + '%)'));
                         var container = document.getElementById('main');
                         console.log(json.grades[grade_idx])
                         var stud_div = document.createElement('div');
@@ -97,39 +106,15 @@
 
                             //question text
                             var q_div = document.createElement('div');
-                            var q_div_id = i+json.grades[grade_idx].questions[j].qid
-                            q_div.id = q_div_id;
+                            q_div.innerHTML = json.grades[i].questions[j].questionContent;
                             qdiv.appendChild(q_div);
-
-                            var xmlhttp_question = new XMLHttpRequest();
-                            xmlhttp_question.onreadystatechange = function() {
-                                var xml_qid = q_div_id;
-                                console.log("xml " + q_div_id + " " + xml_qid);
-                                if (this.readyState == 4) {
-                                    if(this.responseText.indexOf('ERROR') !== -1){
-                                        alert("Error in GetQuestion response!");
-                                        return;
-                                    }
-
-                                    //fill test info for question 1
-                                    var question_json = JSON.parse(this.responseText);
-                                    console.log("xml2 " + JSON.stringify(question_json));
-                                    if(question_json.hasOwnProperty("question")){
-                                        document.getElementById(q_div_id).innerHTML = question_json.question;
-                                    }
-                                }
-                            };
-                            var qdata = {
-                                "ID" : json.grades[i].questions[j].qid
-                            };
-                            xmlhttp_question.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestion&username=" + window.localStorage.getItem('username') + "&payload=" + JSON.stringify(qdata));
-                            xmlhttp_question.send();
-
                             qdiv.appendChild(document.createElement('hr'));
                             qdiv.appendChild(document.createTextNode("Score: " + json.grades[grade_idx].questions[j].score + " / " + json.grades[grade_idx].questions[j].maxScore));
                             qdiv.appendChild(document.createElement('hr'));
                             if(json.grades[i].questions[j].answer !== null){
-                                qdiv.appendChild(document.createTextNode(json.grades[grade_idx].questions[j].answer));
+                            	var pre_tag = document.createElement('pre');
+                            	pre_tag.appendChild(document.createTextNode(json.grades[grade_idx].questions[j].answer));
+                                qdiv.appendChild(pre_tag);
                             }else{
                                 qdiv.appendChild(document.createTextNode("NONE"));
                             }
