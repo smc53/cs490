@@ -31,7 +31,6 @@
                 	console.log("resp: " + this.responseText);
                     var resp = JSON.parse(this.responseText);
                     if(resp.type == "F"){
-                    	alert("Failed login attempt!");
                         return;
                     }
                     if(resp.type == "S"){

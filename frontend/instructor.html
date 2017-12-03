@@ -26,7 +26,7 @@
 			</div>
 			<div class="container color-main2 center">
 				<div>
-					<button class="button color-bold1" onclick="location.href='maketest.html?filter=none';">Create Test</button>
+					<button class="button color-bold1" onclick="location.href='maketest.html?filter=topic$none';">Create Test</button>
 					<button class="button color-bold1" onclick="location.href='question.html';">Edit Questions</button>
 				</div>
 			</div>
@@ -58,11 +58,6 @@
                     var testname = document.createElement('td');
                     testname.innerHTML = JSON.parse(json.tests[i]).name;
                     entry.appendChild(testname);
-
-                    //info
-                    //var info = document.createElement('td');
-                    //info.innerHTML = "N/A";
-                    //entry.appendChild(info);
 
                     //actions
                     var actions = document.createElement('td');

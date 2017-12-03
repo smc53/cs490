@@ -26,9 +26,18 @@
                     <div class="container color-main2"> 
                         <h1 class="center"><b>Available Questions</b></h1><hr>
                         <div class="container">
+                            Keyword
+                            <input class="color-main1" id="keyword" placeholder="Enter keyword to search">
                             Topics
-                            <select id="topic-menu" class="topic-select">
+                            <select id="topic-menu" class="topic-select color-main1">
                                 <option>none</option>
+                            </select>
+                            Diffuculty
+                            <select id="diff-menu" class="color-main1">
+                                <option>None</option>
+                                <option>Easy</option>
+                                <option>Medium</option>
+                                <option>Hard</option>
                             </select>
                             <button type="button" class="button color-bold1" onclick="applyFilter()">Apply</button>
                             <button type="button" class="button color-bold1" onclick="clearFilter()">Clear</button>
@@ -98,7 +107,6 @@
             		questionarray.push(qjson);
             	}
             	//stripping last comma
-            	//checkedStr = checkedStr.substring(0,checkedStr.length-1);
             	if(questionarray.length == 0) {
             		alert("Select questions for test!");
             		return;
@@ -147,19 +155,53 @@
 			
 			window.onload = function(){
 				//Get all questions on load
-				var xmlhttp = new XMLHttpRequest();
-                xmlhttp.onreadystatechange = function() {
-                	if(this.readyState == 4) {
-                		if(this.responseText.indexOf('ERROR') !== -1){
-                			alert("Error in GetQuestions response!");
-                			return;
-                		}
+                var paramArray = window.location.search.substring(1).split("=")[1];
+                console.log(paramArray);
+                var payload = {
+                    "filter" : paramArray
+                }
+                updateQuestionList(payload);
 
-                		resp = JSON.parse(this.responseText);
-                		if(resp.hasOwnProperty('questions')){
-			                var list = document.getElementById("qlist");
-			                for(var i = 0; i < resp.questions.length; i++){
-			                	var qelement = JSON.parse(resp.questions[i]);
+                var xmlhttp2 = new XMLHttpRequest();
+                xmlhttp2.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        var json = JSON.parse(this.responseText);
+                        var topicmenu = document.getElementById("topic-menu");
+                        for(var i=0; i<json.topics.length; i++){
+                            var opt = document.createElement('option');
+                            opt.innerHTML = json.topics[i];
+                            topicmenu.appendChild(opt);
+                            if(window.location.search.substring(1).split("=")[1] === json.topics[i]){
+                                topicmenu.value = json.topics[i];
+                            }
+                        }
+                    }
+                };
+
+                xmlhttp2.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestionTopics");
+                xmlhttp2.send();
+            }
+
+
+            function updateQuestionList(payload){
+                //remove all existing quesitons
+                var questionList = document.getElementById("qlist");
+                while(questionList.hasChildNodes()){
+                    questionList.removeChild(questionList.lastChild);
+                }
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if(this.readyState == 4) {
+                        if(this.responseText.indexOf('ERROR') !== -1){
+                            alert("Error in GetQuestions response!");
+                            return;
+                        }
+
+                        resp = JSON.parse(this.responseText);
+                        if(resp.hasOwnProperty('questions')){
+                            var list = document.getElementById("qlist");
+                            for(var i = 0; i < resp.questions.length; i++){
+                                var qelement = JSON.parse(resp.questions[i]);
 
                                 //check if current test contains this question ID
                                 if(currentTest.qids.includes(qelement.ID)){
@@ -188,40 +230,12 @@
                                 actions.appendChild(btn_add);
                                 entry.appendChild(actions);
                                 list.appendChild(entry);
-			                }
-                		}
-	                }
-                };
-
-                var payarray = new Array();
-                payarray.push("topic$"+window.location.search.substring(1).split("=")[1]);
-                var payload = {
-                    "filter" : payarray
-                }
-
-                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestions&username=" + window.localStorage.getItem('username') +  "&payload=" + JSON.stringify(payload));;
-                xmlhttp.send();
-
-
-                var xmlhttp2 = new XMLHttpRequest();
-                xmlhttp2.onreadystatechange = function() {
-                    if (this.readyState == 4) {
-                        var json = JSON.parse(this.responseText);
-                        var topicmenu = document.getElementById("topic-menu");
-                        for(var i=0; i<json.topics.length; i++){
-                            var opt = document.createElement('option');
-                            opt.innerHTML = json.topics[i];
-                            topicmenu.appendChild(opt);
-                            if(window.location.search.substring(1).split("=")[1] === json.topics[i]){
-                                topicmenu.value = json.topics[i];
                             }
                         }
                     }
                 };
-
-                xmlhttp2.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestionTopics");
-                xmlhttp2.send();
-
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestions&username=" + window.localStorage.getItem('username') +  "&payload=" + JSON.stringify(payload));
+                xmlhttp.send();
             }
 
 
@@ -309,11 +323,33 @@
             }
 
             function applyFilter(){
-                location.href = 'maketest.html?filter=' + document.getElementById('topic-menu').value;
+                var paramArray = new Array();
+                if(document.getElementById('topic-menu').value.length > 0){
+                    paramArray.push("topic$" + document.getElementById('topic-menu').value); 
+                }
+                if(document.getElementById('keyword').value.length > 0){
+                    paramArray.push("keyword$" + document.getElementById('keyword').value); 
+                }
+                if(document.getElementById('diff-menu').value !== "None"){
+                    paramArray.push("difficulty$" + document.getElementById('diff-menu').value); 
+                }
+                console.log(paramArray);
+                var payload = {
+                    "filter" : paramArray
+                }
+                console.log("Filter : " + JSON.stringify(payload));
+                updateQuestionList(payload);
             }
 
+
             function clearFilter(){
-                location.href = 'maketest.html?filter=none';
+                document.getElementById('keyword').value = "";
+                var paramArray = new Array();
+                paramArray.push("topic$none"); 
+                var payload = {
+                    "filter" : paramArray
+                }
+                updateQuestionList(payload);
             }
 
 
