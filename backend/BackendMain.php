@@ -93,22 +93,26 @@ function editQuestion($username, $payload) {
 }
 function getQuestions($payload) {
     $query = "SELECT * FROM `QuestionBank` WHERE `Hidden` = 0";
+    $keywords = array();
+    
+    if(isset($payload["filter"])) {    
+        $filterArray = $payload["filter"];
 
-    if(isset($payload["filter"])) {      
-        if($payload["filter"][0] != "topic\$none") {
-            $filterArray = $payload["filter"];
-            $additionalSearch = " AND `Tags` LIKE '%".$filterArray[0]."%'";
-            $query = $query.$additionalSearch;
-        }
-
-        if(count($filterArray) > 1) {
-            $query = $query."FROM (SELECT * FROM `QuestionBank` WHERE "
-            for(int i=1; i<count($filterArray); i++) {
-                $additionalSearch = "`Tags` LIKE '%".$filterArray[$i]."%'";
-                if($i < count($filterArray)-1) {
-                    $additionalSearch = $additionalSearch." OR ";
-                }
-                $query = $query.$additionalSearch.")";
+        for($i=0; $i<count($filterArray); $i++) {
+            $filterString   = $filterArray[$i];
+            $splitValues    = explode('$', $filterString);
+            $instruction    = $splitValues[0];
+            $value          = $splitValues[1];
+            if($instruction == 'topic' && $value != 'none') {
+                $additionalSearch = " AND `Tags` LIKE '%".$filterString."%' ";
+                $query            = $query.$additionalSearch;
+            }
+            if($instruction == 'difficulty') {
+                $additionalSearch = " AND `Tags` LIKE '%".$filterString."%' ";
+                $query            = $query.$additionalSearch;
+            }
+            if($instruction == 'keyword') {
+                array_push($keywords, $value); 
             }
         }
     }
@@ -122,7 +126,12 @@ function getQuestions($payload) {
         $jsonTemp->metadata = $row["Metadata"];
         $jsonTemp->output   = $row["ExpectedOutput"];
         $jsonTemp->tags     = $row["Tags"];
-        array_push($questionArray, json_encode($jsonTemp));      
+
+        $filterCheck        = matchNeedlesInHaystack($keywords, $jsonTemp->question);
+
+        if($filterCheck) {
+            array_push($questionArray, json_encode($jsonTemp));   
+        }
     }
     $jsonReturn;
     $jsonReturn->questions  = $questionArray;
@@ -471,5 +480,17 @@ function internal_getTestData($examID) {
     $jsonReturn->name       = $row["Name"];
     $jsonReturn->questions  = $row["Questions"];
     return $jsonReturn;
+}
+function matchNeedlesInHaystack($needles, $haystack) {
+    if(empty($needles)){
+        return true;
+    }
+
+    foreach($needles as $needle) {
+        if (strpos($haystack, $needle) === false) {
+            return false;
+        }
+    }
+    return true;
 }
 ?>
