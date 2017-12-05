@@ -44,6 +44,11 @@
             xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-login.php?request=Login&username=" + window.localStorage.getItem('username') + "&password=" + passwd);
             xmlhttp.send();
         };
+
+        window.onload = function(){
+        	window.localStorage.setItem("username", null);
+        }
+        
         </script>
     </body>
 </html>

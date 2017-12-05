@@ -10,12 +10,12 @@
         <div class="color-main1">
             <div class="navbar">
                 <div class="navbar-left">
-                    <a class="color-main1" href="instructor.html">HOME</a>
-                    <a class="color-main1" href="maketest.html?filter=none">Create Test</a>
+                    <a class="color-main1" href="instructor.html">Home</a> |
+                    <a class="color-main1" href="maketest.html?filter=none">Create Test</a> |
                     <a class="color-main1" href="question.html">Questions</a>
                 </div>
                 <div class="navbar-right">
-                    <a class="color-main1" href="login.html">logout</a>
+                    <a class="color-main1" href="login.html">Logout</a>
                 </div>
             </div>
         </div>
@@ -46,6 +46,11 @@
             }
 
             window.onload = function(){
+                //check if user is logged in
+                if(window.localStorage.getItem('username') === null){
+                    window.location = "login.html"
+                }
+
                 var xmlhttp = new XMLHttpRequest();
                 //response from middle
                 xmlhttp.onreadystatechange = function() {
@@ -60,7 +65,7 @@
                         var container = document.getElementById('main');
                         for(var i=0;i<json.grades.length;i++){
                             console.log(json.grades[i])
-                            var stud_div = document.createElement('div');
+                            var stud_div = document.createElement('h3');
                             stud_div.className = "container color-main2";
                             stud_div.innerHTML = "Student: " + json.grades[i].studentName;
                             container.appendChild(stud_div);
@@ -100,8 +105,8 @@
                                 
                                 qdiv.appendChild(document.createElement('hr'));
                                 var comment_div = document.createElement('textarea');
-                                if(json.grades[i].questions[j].comments !== null){
-                                    comment_div.value = json.grades[i].questions[j].comments.replace(/<br>/g, '\n');
+                                if(json.grades[i].questions[j].comment !== null){
+                                    comment_div.value = json.grades[i].questions[j].comment.replace(/<br>/g, '\n');
                                 }else{
                                     comment_div.value = "none";
                                 }

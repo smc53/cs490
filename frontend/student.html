@@ -11,10 +11,10 @@
 		<div class="color-main1">
             <div class="navbar">
                 <div class="navbar-left">
-                    <a class="color-main1" href="student.html">HOME</a>
+                    <a class="color-main1" href="student.html">Home</a>
                 </div>
                 <div class="navbar-right">
-                    <a class="color-main1" href="login.html">logout</a>
+                    <a class="color-main1" href="login.html">Logout</a>
                 </div>
             </div>
         </div>
@@ -138,6 +138,11 @@
             }
 
 			window.onload = function(){
+                //check if user is logged in
+                if(window.localStorage.getItem('username') === null){
+                    window.location = "login.html"
+                }
+
 				//fill username
             	document.getElementById('uname').appendChild(document.createTextNode('Welcome ' + window.localStorage.getItem('username') + '!'));
 

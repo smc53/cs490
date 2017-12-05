@@ -10,12 +10,12 @@
         <div class="color-main1">
             <div class="navbar">
                 <div class="navbar-left">
-                    <a class="color-main1" href="instructor.html">HOME</a>
-                    <a class="color-main1" href="maketest.html?filter=none">Create Test</a>
+                    <a class="color-main1" href="instructor.html">Home</a> |
+                    <a class="color-main1" href="maketest.html?filter=none">Create Test</a> |
                     <a class="color-main1" href="question.html">Questions</a>
                 </div>
                 <div class="navbar-right">
-                    <a class="color-main1" href="login.html">logout</a>
+                    <a class="color-main1" href="login.html">Logout</a>
                 </div>
             </div>
         </div>
@@ -36,13 +36,13 @@
                     <div class="rating centercontainer-row">
                         <div class="container-col-l">
                             Topic 
-                            <select id="topic-menu" class="topic-select">
+                            <select id="topic-menu" class="topic-select  color-main1">
                                 <option value="none">None</option>
                             </select>
                         </div>
                         <div class="container-col-r">
                             Difficulty 
-                            <select id="diff-menu">
+                            <select id="diff-menu" class="color-main1">
                                 <option value="Easy">Easy</option>
                                 <option value="Medium">Medium</option>
                                 <option value="Hard">Hard</option>
@@ -57,6 +57,24 @@
             <div class="container container-col-r">
                 <div class="container color-main2 left-align">
                     <h2 class="center"><b>Current Questions</b></h2><hr>
+                    <div class="container center">
+                        Keyword
+                        <input class="color-main1" id="keyword" placeholder="Enter keyword to search"><br>
+                        Topics
+                        <select id="topic-menu-right" class="topic-select color-main1">
+                            <option>none</option>
+                        </select><br>
+                        Diffuculty
+                        <select id="diff-menu-right" class="color-main1">
+                            <option>None</option>
+                            <option>Easy</option>
+                            <option>Medium</option>
+                            <option>Hard</option>
+                        </select><br><br>
+                        <button type="button" class="button color-bold1" onclick="applyFilter()">Apply</button>
+                        <button type="button" class="button color-bold1" onclick="clearFilter()">Clear</button>
+                    </div>
+                    <hr>
                     <table class="color-main2 left-align" id="qlist">
                         <tr>
                             <th>
@@ -106,7 +124,13 @@
                 xmlhttp.send();
 			}
 
-            function fillQuestionList(resp){
+            function updateQuestionList(resp){
+                //remove all existing quesitons
+                var questionList = document.getElementById("qlist");
+                while(questionList.hasChildNodes()){
+                    questionList.removeChild(questionList.lastChild);
+                }
+
                 var json = JSON.parse(resp);
                 var list = document.getElementById("qlist");
                 for(var i = 0; i < json.questions.length; i++){
@@ -199,7 +223,7 @@
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function() {
                     if (this.readyState == 4) {
-                        fillQuestionList(this.responseText);
+                        updateQuestionList(this.responseText);
                     }
                 };
 
@@ -219,6 +243,11 @@
             }
 
             window.onload = function(){
+           //check if user is logged in
+                if(window.localStorage.getItem('username') === null){
+                    window.location = "login.html"
+                }
+
                 loadRequest();
 
                 var xmlhttp3 = new XMLHttpRequest();
@@ -234,12 +263,63 @@
                                 topicmenu.value = json.topics[i];
                             }
                         }
+                        
+                        var topicmenu_right = document.getElementById("topic-menu-right");
+                        for(var i=0; i<json.topics.length; i++){
+                            var opt_right = document.createElement('option');
+                            opt_right.innerHTML = json.topics[i];
+                            topicmenu_right.appendChild(opt_right);
+                            if(window.location.search.substring(1).split("=")[1] === json.topics[i]){
+                                topicmenu_right.value = json.topics[i];
+                            }
+                        }
                     }
                 };
 
                 xmlhttp3.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestionTopics");
                 xmlhttp3.send();
+
 			}	
+
+            function applyFilter(){
+                var paramArray = new Array();
+                if(document.getElementById('topic-menu-right').value.length > 0){
+                    paramArray.push("topic$" + document.getElementById('topic-menu-right').value); 
+                }
+                if(document.getElementById('keyword').value.length > 0){
+                    paramArray.push("keyword$" + document.getElementById('keyword').value); 
+                }
+                if(document.getElementById('diff-menu-right').value !== "None"){
+                    paramArray.push("difficulty$" + document.getElementById('diff-menu-right').value); 
+                }
+                console.log(paramArray);
+                var payload = {
+                    "filter" : paramArray
+                }
+                console.log("Filter : " + JSON.stringify(payload));
+
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        updateQuestionList(this.responseText);
+                    }
+                };
+
+                xmlhttp.open("POST", "https://web.njit.edu/~smc53/cs490/request-generic.php?request=GetQuestions&username=" + window.localStorage.getItem('username') +  "&payload=" + JSON.stringify(payload));
+                xmlhttp.send();
+                //updateQuestionList(payload);
+            }
+
+
+            function clearFilter(){
+                document.getElementById('keyword').value = "";
+                var paramArray = new Array();
+                paramArray.push("topic$none"); 
+                var payload = {
+                    "filter" : paramArray
+                }
+                updateQuestionList(payload);
+            }
 
 		</script>
 	</body>

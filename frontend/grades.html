@@ -11,10 +11,10 @@
         <div class="color-main1">
             <div class="navbar">
                 <div class="navbar-left">
-                    <a class="color-main1" href="student.html">HOME</a>
+                    <a class="color-main1" href="student.html">Home</a>
                 </div>
                 <div class="navbar-right">
-                    <a class="color-main1" href="login.html">logout</a>
+                    <a class="color-main1" href="login.html">Logout</a>
                 </div>
             </div>
 	    </div>
@@ -29,6 +29,11 @@
 
 		<script type="text/javascript">
 			window.onload = function(){
+                //check if user is logged in
+                if(window.localStorage.getItem('username') === null){
+                    window.location = "login.html"
+                }
+
 				var xmlhttp = new XMLHttpRequest();
 				xmlhttp.onreadystatechange = function() {
 				    if (this.readyState == 4) {
@@ -55,7 +60,7 @@
 	                    score.innerHTML = '[PH, score]'; 
 	                    list.appendChild(score);
 	                    var cmt_td = document.createElement('td');
-	                    cmt_td.innerHTML = '[PH, comments need to be broken up by question] ' + grade.comments; 
+	                    cmt_td.innerHTML = '[PH, comments need to be broken up by question] ' + grade.comment; 
 	                    list.appendChild(cmt_td);
 				    }
 				};
@@ -95,7 +100,7 @@
                         document.getElementById('examgrade').appendChild(document.createTextNode('Score : ' + json.grades[grade_idx].score + '/' + json.grades[grade_idx].maxScore + ' (' + (100* json.grades[grade_idx].score / json.grades[grade_idx].maxScore) + '%)'));
                         var container = document.getElementById('main');
                         console.log(json.grades[grade_idx])
-                        var stud_div = document.createElement('div');
+                        var stud_div = document.createElement('h3');
                         stud_div.className = "container color-main2";
                         stud_div.innerHTML = "Student: " + json.grades[grade_idx].studentName;
                         container.appendChild(stud_div);
@@ -105,12 +110,18 @@
                             qdiv.className = "container color-main1";
 
                             //question text
+                            var question_text = document.createElement('h4');
+                            question_text.innerHTML = "Question : ";
+                            qdiv.appendChild(question_text);
                             var q_div = document.createElement('div');
                             q_div.innerHTML = json.grades[i].questions[j].questionContent;
                             qdiv.appendChild(q_div);
                             qdiv.appendChild(document.createElement('hr'));
                             qdiv.appendChild(document.createTextNode("Score: " + json.grades[grade_idx].questions[j].score + " / " + json.grades[grade_idx].questions[j].maxScore));
                             qdiv.appendChild(document.createElement('hr'));
+                            var ans_text = document.createElement('h4');
+                            ans_text.innerHTML = "Student Answer : ";
+                            qdiv.appendChild(ans_text);
                             if(json.grades[i].questions[j].answer !== null){
                             	var pre_tag = document.createElement('pre');
                             	pre_tag.appendChild(document.createTextNode(json.grades[grade_idx].questions[j].answer));
@@ -120,8 +131,12 @@
                             }
                             
                             qdiv.appendChild(document.createElement('hr'));
-                            var comment_div = document.createElement('div');
-                            comment_div.innerHTML = json.grades[grade_idx].questions[j].comments;
+
+                            var comments_text = document.createElement('h4');
+                            comments_text.innerHTML = "Comments : ";
+                            qdiv.appendChild(comments_text);
+                            var comment_div = document.createElement('pre');
+                            comment_div.innerHTML = json.grades[grade_idx].questions[j].comment;
                             qdiv.appendChild(comment_div);
                             qdiv.appendChild(document.createElement('hr'));
 

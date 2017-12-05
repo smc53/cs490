@@ -10,12 +10,12 @@
 		<div class="color-main1">
             <div class="navbar">
                 <div class="navbar-left">
-                    <a class="color-main1" href="instructor.html">HOME</a>
-                    <a class="color-main1" href="maketest.html?filter=none">Create Test</a>
+                    <a class="color-main1" href="instructor.html">Home</a> | 
+                    <a class="color-main1" href="maketest.html?filter=none">Create Test</a> | 
                     <a class="color-main1" href="question.html">Questions</a>
                 </div>
                 <div class="navbar-right">
-                    <a class="color-main1" href="login.html">logout</a>
+                    <a class="color-main1" href="login.html">Logout</a>
                 </div>
             </div>
         </div>
@@ -27,18 +27,18 @@
                         <h1 class="center"><b>Available Questions</b></h1><hr>
                         <div class="container">
                             Keyword
-                            <input class="color-main1" id="keyword" placeholder="Enter keyword to search">
+                            <input class="color-main1" id="keyword" placeholder="Enter keyword to search"><br>
                             Topics
                             <select id="topic-menu" class="topic-select color-main1">
                                 <option>none</option>
-                            </select>
+                            </select><br>
                             Diffuculty
                             <select id="diff-menu" class="color-main1">
                                 <option>None</option>
                                 <option>Easy</option>
                                 <option>Medium</option>
                                 <option>Hard</option>
-                            </select>
+                            </select><br><br>
                             <button type="button" class="button color-bold1" onclick="applyFilter()">Apply</button>
                             <button type="button" class="button color-bold1" onclick="clearFilter()">Clear</button>
                         </div>
@@ -154,6 +154,11 @@
 			}
 			
 			window.onload = function(){
+                //check if user is logged in
+                if(window.localStorage.getItem('username') === null){
+                    window.location = "login.html"
+                }
+
 				//Get all questions on load
                 var paramArray = window.location.search.substring(1).split("=")[1];
                 console.log(paramArray);

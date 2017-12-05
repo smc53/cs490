@@ -71,11 +71,11 @@ a{
 .button:hover{color:#000!important;background-color:#ccc!important}
 .navbar {
   position: relative;
-  min-height: 50px;
+  min-height: 34px;
   border: 1px solid transparent;
   margin-right : 70px;
   margin-left: 70px;
-  font-size:28px;
+  font-size:19px;
 }
 .navbar-left{
   float: left;

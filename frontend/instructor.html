@@ -10,12 +10,12 @@
 		<div class="color-main1">
             <div class="navbar">
                 <div class="navbar-left">
-                    <a class="color-main1" href="instructor.html">HOME</a>
-                    <a class="color-main1" href="maketest.html?filter=none">Create Test</a>
+                    <a class="color-main1" href="instructor.html">Home</a> |
+                    <a class="color-main1" href="maketest.html?filter=none">Create Test</a> |
                     <a class="color-main1" href="question.html">Questions</a>
                 </div>
                 <div class="navbar-right">
-                    <a class="color-main1" href="login.html">logout</a>
+                    <a class="color-main1" href="login.html">Logout</a>
                 </div>
             </div>
 	    </div>
@@ -24,12 +24,12 @@
 			<div class="center">
 				<h1 id="uname"></h1><hr>
 			</div>
-			<div class="container color-main2 center">
+			<!--div class="container color-main2 center">
 				<div>
 					<button class="button color-bold1" onclick="location.href='maketest.html?filter=topic$none';">Create Test</button>
 					<button class="button color-bold1" onclick="location.href='question.html';">Edit Questions</button>
 				</div>
-			</div>
+			</div-->
 			<div class="container color-main2 center">
 				<h2><b>Available Tests</b></h2>
 				<table id="testlist" class="left-align">
@@ -141,6 +141,12 @@
 
 
             window.onload = function(){
+                //check if user is logged in
+                if(window.localStorage.getItem('username') === null){
+                    window.location = "login.html"
+                }
+                
+
             	//fill username
             	document.getElementById('uname').appendChild(document.createTextNode('Welcome ' + window.localStorage.getItem('username') + '!'));
 
