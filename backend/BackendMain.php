@@ -30,9 +30,8 @@ if(isset($_POST["request"])) {
         case "SubmitGradedExam"          : $output = submitGradedExam($username, $payload);       break; 
         case "GetGradesForExam"          : $output = getGradesForExam($payload);                  break;  
         case "GetStudentGrades"          : $output = getStudentGrades($username);                 break;     
-        case "GetStudentExamGrade"       : $output = getStudentExamGrade($user, $payload);        break;
         case "ReleaseGrades"             : $output = releaseGrades($user, $payload);              break;
-        case "EditGradesForExam"         : $output = editGradesForExam($username, $payload);       break;
+        case "EditGradesForExam"         : $output = editGradesForExam($username, $payload);      break;
         case "GetQuestionTopics"         : $output = getQuestionTopics();                         break;
         case "GetQuestionHiddenState"    : $output = getQuestionHiddenState($payload);            break;
         case "ToggleQuestionHiddenState" : $output = toggleQuestionHiddenState($payload);         break;
@@ -244,44 +243,6 @@ function releaseGrades($user, $payload) {
     runSQLQuerry($query);
     return 'T';
 }
-function getStudentExamGrade($user, $payload) {
-    $query  = "SELECT * FROM `Grades` WHERE `StudentID` = '".getUserID($user)."' AND `ExamID` = '".$payload["examID"]."' ORDER BY `ID` DESC;";
-    $result     = runSQLQuerry($query);
-    $gradeArray = array();
-    $checkedStudentsArray = array();
-
-    $examData = internal_getTestData($payload["examID"]);
-    $examQuestions = json_decode($examData->questions);
-    $questionsArray = array();
-    for($i = 0; $i<count($examQuestions); $i++) {
-        $question->qid        = $examQuestions[$i]->qid;
-        $question->score      = json_decode($row["Scores"])[$i];
-        $question->maxScore   = $examQuestions[$i]->maxPoints;
-        $question->comments   = json_decode($row["Comments"])[$i];
-        $studentAnswerQuery   = "SELECT `Answer` FROM `CompletedExaminations` WHERE `ExamID` = '".$payload["examID"]."' AND `QuestionID` = '".$question->qid."' AND `StudentID` = '".getUserID($user)."' ORDER BY `ID` DESC;";
-        $studentAnswerResult  = runSQLQuerry($studentAnswerQuery);
-        $studentAnswerRow     = $studentAnswerResult->fetch_assoc();
-        $question->answer     = $studentAnswerRow["Answer"]; 
-
-        $questionNameQuery          = "SELECT `Question` FROM `QuestionBank` WHERE `ID` = '".$question->qid."';";
-        $questionNameResult         = runSQLQuerry($questionNameQuery);
-        $questionNameRow            = $questionNameResult->fetch_assoc();
-        $question->questionContent  = $questionNameRow["Question"]; 
-
-        array_push($questionsArray, clone($question));
-    }
-    $examGrade->examName    = $examData->name;
-    $examGrade->examID      = $row["ExamID"];
-    $examGrade->questions   = $questionsArray;
-    $examGrade->studentID   = $row["StudentID"];
-    $examGrade->studentName = getUsername($row["StudentID"]);
-    $examGrade->released    = $row["Released"];
-    array_push($gradeArray, $examGrade); 
-    array_push($checkedStudentsArray, $row["StudentID"]);     
-
-    $jsonReturn->grades  = $gradeArray;
-    return json_encode($jsonReturn);
-}
 function getStudentGrades($user) {
     $query      = "SELECT * FROM `Grades` WHERE `StudentID` = '".getUserID($user)."' ORDER BY `ID` DESC;";
     $result     = runSQLQuerry($query);
@@ -296,11 +257,17 @@ function getStudentGrades($user) {
                 $totalScore           = 0;
                 $maxScore             = 0;
                 $question->qid        = $examQuestions[$i]->qid;
-                $question->score      = json_decode($row["Scores"])[$i];
-                $totalScore          += json_decode($row["Scores"])[$i];
+
+                $commentScoreQuery    = "SELECT `Score`, `Comment` FROM `Grades` WHERE `ExamID` = '".$row["ExamID"]."' AND `QuestionID` = '".$question->qid."' AND `StudentID` = '".getUserID($user)."' AND `Released` = 1 ORDER BY `ID` DESC;";
+                $commentScoreResult   = runSQLQuerry($commentScoreQuery);
+                $commentScoreRow      = $commentScoreResult->fetch_assoc();
+                $question->comment    = $commentQueryRow["Comment"]; 
+                $question->score      = $commentQueryRow["Score"]; 
+
+                $totalScore          += $commentQueryRow["Score"]; 
                 $question->maxScore   = $examQuestions[$i]->maxPoints;
                 $maxScore            += $examQuestions[$i]->maxPoints;
-                $question->comments   = json_decode($row["Comments"])[$i];
+
                 $studentAnswerQuery   = "SELECT `Answer` FROM `CompletedExaminations` WHERE `ExamID` = '".$row["ExamID"]."' AND `QuestionID` = '".$question->qid."' AND `StudentID` = '".getUserID($user)."' ORDER BY `ID` DESC;";
                 $studentAnswerResult  = runSQLQuerry($studentAnswerQuery);
                 $studentAnswerRow     = $studentAnswerResult->fetch_assoc();
@@ -344,7 +311,12 @@ function getGradesForExam($payload) {
                 $question->qid        = $examQuestions[$i]->qid;
                 $question->score      = json_decode($row["Scores"])[$i];
                 $question->maxScore   = $examQuestions[$i]->maxPoints;
-                $question->comments   = json_decode($row["Comments"])[$i];
+
+                $commentQuery         = "SELECT `Comments` FROM `Grades` WHERE `ExamID` = '".$payload["ExamID"]."' AND `QuestionID` = '".$question->qid."' AND `StudentID` = '".getUserID($user)."' ORDER BY `ID` DESC;";
+                $commentQueryrResult  = runSQLQuerry($commentQuery);
+                $commentQueryRow      = $commentQueryrResult->fetch_assoc();
+                $question->comment    = $commentQueryRow["Comments"]; 
+
                 $studentAnswerQuery   = "SELECT `Answer` FROM `CompletedExaminations` WHERE `ExamID` = '".$payload["examID"]."' AND `QuestionID` = '".$question->qid."' AND `StudentID` = '".$row["StudentID"]."' ORDER BY `ID` DESC;";
                 $studentAnswerResult  = runSQLQuerry($studentAnswerQuery);
                 $studentAnswerRow     = $studentAnswerResult->fetch_assoc();
