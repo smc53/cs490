@@ -285,8 +285,8 @@ if(isset($_POST['request'])){
     echo curltobackend($post);
 
     // delete the files after we are done
-    //exec("rm ".$Answerfile, $output, $return);
-    //exec("rm ".$Correctfile, $output, $return);
+    exec("rm ".$Answerfile, $output, $return);
+    exec("rm ".$Correctfile, $output, $return);
 
   }//elseif
 }//ifisset
