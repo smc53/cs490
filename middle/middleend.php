@@ -1,7 +1,12 @@
 <?php
-/// Mateusz Stolarz, middleend.php
+/// Mateusz Stolarz, middleend.php  //
+// December 11, 2017 Cs490 Project  //
+
+
+//  Curl to back end     //
+
 function curltobackend($query){
-    $string2 = http_build_query($query);   
+    $string2 = http_build_query($query);    
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, 'http://afsaccess4.njit.edu/~ash32/CS490/BackendMain.php');
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -11,22 +16,17 @@ function curltobackend($query){
     return $response;
 }
 
-if(isset($_POST['request'])){
-  $request= $_POST['request'];
-///    other then grade request, just forword to Backend     ///  
-  if($request!="SubmitGrading"){
-        echo curltobackend($_POST);
-  }elseif($request=="SubmitGrading"){
-// used for submitting the graded test  ///
+//     Write the python code into file      //
 
-//              write the python code into file         //
 function writefile($filename,$content,$call){
    $myfile = fopen($filename, "w") or die("Unable to open file!");
    $txt = $content."\n"."polska=".$call."\n".'print ("\n")'."\n"."print( polska )";
    fwrite($myfile, $txt);
    fclose($myfile);
 }
-//       execute python3 file and return the result if any      //
+
+//       Execute python3 file and return the result if any      //
+
 function exePython($fname, $userin){
   if($userin){
     $command = "timeout 3s python3 ".$fname." < input.txt";
@@ -40,7 +40,9 @@ function exePython($fname, $userin){
     return "";
   }
 }
-//          write user input into file              //
+
+//      Write user input into file              //
+
 function writeinput($callpa){
    $callinput=preg_split("/,/", $callpa[1]);
    $input="";
@@ -53,7 +55,9 @@ function writeinput($callpa){
    fclose($myfile);
    $userinput=true;
 }
-//         fixing function name      //
+
+//         Fixing function name      //
+
  function fixfunction($call1, $answer ){  
       $correctfname = substr($call1,0, strpos($call1,"("));
       $correctfname = trim($correctfname);
@@ -74,7 +78,9 @@ function writeinput($callpa){
       $ret[1] = $wrongname;
       return $ret;
  }
+ 
  //            Check for Proper Parameters           //
+ 
  function paramcheck($correct, $answer ){  
       $sindex = strpos($answer,"def ")+4;
       $eindex = strpos($answer,"(");
@@ -98,46 +104,55 @@ function writeinput($callpa){
  }
 
 
-//         inicialize arrays              //
-$comment="";              //comments
-$testcomments = array();  // array of comments in order
-$testgrades = array();    // array of grades   in order
-$qidarray = array();    // array of grades   in order
-$testgrade = 0;           // final test grade
 
-//       grab required information from request         //
-$username=$_POST['username'];
-$paylo=$_POST['payload'];
-$payobj= json_decode($paylo, true); 
-$examID=$payobj["examID"]; 
+
+// If Grade Request grade otherwise Just forward  //
+
+if(isset($_POST['request'])){
+  $request= $_POST['request'];
+  if($request!="SubmitGrading"){
+        echo curltobackend($_POST);
+  }elseif($request=="SubmitGrading"){
+    //         inicialize arrays              //
+    $comment="";                //comments
+    $testcomments = array();    // array of comments in order
+    $testgrades = array();      // array of grades    in order
+    $qidarray = array();        // array of qids      in order
+    $testgrade = 0;             // final test grade
+
+    //       grab required information from Request      //
+    $username=$_POST['username'];
+    $paylo=$_POST['payload'];
+    $payobj= json_decode($paylo, true); 
+    $examID=$payobj["examID"]; 
  
-$Correctfile = $username."c.py";   // create files based of username
-$Answerfile = $username."a.py";
+    $Correctfile = $username."c.py";   // create files based of username
+    $Answerfile = $username."a.py";
   
-//           Get Json From Back end upon finished test               //   
-$payload = new \stdClass();
-$payload->examID = $examID;
-$payload->username =$username;
-$jsonpayload = json_encode($payload);
-$postr= ['request'=>'GetCompletedExam','username'=>$username,'payload'=>$jsonpayload ];
-$json= curltobackend($postr);
+    //           Get Json From Back end upon finished test               //   
+    $payload = new \stdClass();
+    $payload->examID = $examID;
+    $payload->username =$username;
+    $jsonpayload = json_encode($payload);
+    $postr= ['request'=>'GetCompletedExam','username'=>$username,'payload'=>$jsonpayload ];
+    $json= curltobackend($postr);
 
-//           Decode the json into Appropriate Arrays                 //
-$obj= json_decode($json, true);
-$correctarray= $obj["correctAnswers"];
-$callarray = $obj["metadata"];
-$answerarray=$obj['answers'];
+    //           Decode the json into Appropriate Arrays                 //
+    $obj= json_decode($json, true);
+    $correctarray= $obj["correctAnswers"];
+    $callarray = $obj["metadata"];
+    $answerarray=$obj['answers'];
 
 
-/////////////////For each question Run grading loop////////////////
-$questions = sizeof($correctarray);
-for($q=0;$q<$questions;$q++){ 
-$comment=""; // added today 
+    /////////////////For each question Run grading loop////////////////
+    $questions = sizeof($correctarray);
+    for($q=0;$q<$questions;$q++){ 
+      $comment=""; 
       /////////////////////////////Get point value per question/////////////////////
       $questionarr=$obj["questions"];                                                           
       $points = json_decode($questionarr[$q], true);          
       $maxPoints=$points["questionInfo"]["maxPoints"]; 
-      $qidarray=$points["questionInfo"]["qid"];     // make array of qid for backend
+      $qidarray[]=$points["questionInfo"]["qid"];     // make array of qid for backend
       if($maxPoints==NULL || $maxPoints < 1){
         $maxPoints=10;
       }                                        
@@ -181,7 +196,7 @@ $comment=""; // added today
         }
         $call1=$callp[0];
         //////////////////     Ckeck the function call        //////////////////////////////////////////
-           if($mistake){
+        if($mistake){
                 $temp = fixfunction($call1, $answer);
                 if($temp[1]){
                   $comment=$comment."Incorrect function name has been used\t\t\t\t\t\t\t -$ptPerMistake pt<br>";
@@ -195,7 +210,7 @@ $comment=""; // added today
                   $penelty+=$ptPerMistake;
                 }
            $mistake = false;
-           }
+        }
 
         ///////////////////// execute correct answer to find desired result ////////////////////////////
         writefile($Correctfile,$correct,$call1);
@@ -211,79 +226,68 @@ $comment=""; // added today
         }else{
           $success=false;
         }
-           
-       if ($success==false){
-         $command = "timeout 3s java grader ".'"'.$call1.'"'." ".$Answerfile." ".$Correctfile;
-         exec($command, $outputJ, $returnJ);
-         if(sizeof($outputJ)>0 && $returnJ[0]==0){
-              //
-         }
-         //if ($answeroutput==""){
-           $recivedanswer[]=" ";
-           $comment=$comment."Error could not Execute ";
-           for($e=0; $e<sizeof($outputJ);$e++){
+        $outputJ=[];   
+        if ($success==false){
+          $command = "timeout 3s java grader ".'"'.$call1.'"'." ".$Answerfile." ".$Correctfile;
+          exec($command, $outputJ, $returnJ);             
+          $recivedanswer[]=" ";
+          $comment=$comment."The code Was not executable\t\t\t\t\t\t\t\t-".($maxPoints-$penelty)."pt";
+          for($e=0; $e<sizeof($outputJ);$e++){
                $comment=$comment."<br>".$outputJ[$e];
-               //$penelty++;
-           }
-           $penelty = $maxPoints;
-           $comment=$comment."<br>";
-           break;
-           //}                         
+          }
+          $penelty = $maxPoints;
+          $comment=$comment."<br>";
+          break;
+                                  
         }
-   }
-/////////////////////////////////////////////// at the end generate grade for executable code///////////////////////
-     $grade=$maxPoints;
-     $ptPerQ=($maxPoints-$penelty)/$calltimes;
-     if($success){
-       $ccount=0;
-       for($i=0; $i<count($expectedanswer);$i++){
-         $output=",\tIncorrect\t -$ptPerQ pt <br>";
+      }
+      /////////////////////////////////////////////// at the end generate grade for executable code///////////////////////
+      $grade=$maxPoints;
+      $ptPerQ=($maxPoints-$penelty)/$calltimes;
+      if($success){
+        $ccount=0;
+        for($i=0; $i<count($expectedanswer);$i++){
+           $output=",\tIncorrect\t -$ptPerQ pt <br>";
     
-         if ( $expectedanswer[$i] == $recivedanswer[$i] ){
+        if ( $expectedanswer[$i] == $recivedanswer[$i] ){
           $output=",\tCorrect  \t +$ptPerQ pt<br>";  
           $ccount++; 
-       }
-       $comment= $comment."Call: | ".$callfield[$i]." Expected:\t".$expectedanswer[$i].",\tReceived:\t".$recivedanswer[$i].$output; 
-      }
+        }
+         $comment= $comment."Call: ".$callfield[$i]." Expected:\t".$expectedanswer[$i].",\tReceived:\t".$recivedanswer[$i].$output; 
+        }
       $grade=($ccount/count($expectedanswer))*($maxPoints-$penelty);  
-     // $grade = $penelty;
       if($grade<0){
         $grade=0;
       }
-    }else{
-      $grade=$grade-$penelty;
-    }
-   $comment= $comment."Grade: ".$grade." / ".$maxPoints;
-  /////////////////////////////////delimit with $ //////////////////////////////////////////
-   // if($q+1 < $questions){
-   // $comment=$comment."$";         ///remove
-   // }
-  $comment = str_replace("'", "\"", $comment);
-  $comment = str_replace('"', '\"', $comment);
-  ///$replacedcomment = str_replace("'", "\'", $repl);
-  $testcomments[]=$comment; // one comment per question
-  $testgrades[]=$grade;     // one grade per question
-  $testgrade+=$grade;       // final test grade
+      }else{
+       $grade=$grade-$penelty;
+      }
+
+      $comment = str_replace("'", "\"", $comment);
+      $comment = str_replace('"', '\"', $comment);
+      $testcomments[]=$comment; // one comment per question
+      $testgrades[]=$grade;     // one grade per question
+      $testgrade+=$grade;       // final test grade
 }   
 
-//$testcomments = array("hi" ,"hi");
-///////////////////////////////////////////////////////////////////////
-///////  At the end, Send to database to Store                      ///
-///////////////////////////////////////////////////////////////////////
-$jsonForword = new \stdClass();
-$jsonForword->comments = $testcomments;
-$jsonForword->scores = $testgrades;
-$jsonForword->examID = $examID;
-$jsonForword->qids = $qidarray;
-$json = json_encode($jsonForword);
-$post= ['username'=>$username ,'request'=>'SubmitGradedExam', 'payload'=>$json];
+    //$testcomments = array("hi" ,"hi");
+    ///////////////////////////////////////////////////////////////////////
+    ///////  At the end, Send to database to Store                      ///
+    ///////////////////////////////////////////////////////////////////////
+    $jsonForword = new \stdClass();
+    $jsonForword->comments = $testcomments;
+    $jsonForword->scores = $testgrades;
+    $jsonForword->examID = $examID;
+    $jsonForword->qids = $qidarray;
+    $json = json_encode($jsonForword);
+    $post= ['username'=>$username ,'request'=>'SubmitGradedExam', 'payload'=>$json];
 
-echo curltobackend($post);
+    echo curltobackend($post);
 
-// delete the files after we are done
-//exec("rm ".$Answerfile, $output, $return);
-//exec("rm ".$Correctfile, $output, $return);
+    // delete the files after we are done
+    //exec("rm ".$Answerfile, $output, $return);
+    //exec("rm ".$Correctfile, $output, $return);
 
-}//elseif
+  }//elseif
 }//ifisset
 ?>

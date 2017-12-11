@@ -1,3 +1,9 @@
+///////////////////////////////////////////////
+//   Mateusz Stolarz                         //
+//   UCID: mss86                             //
+// December 11, 2017                         //
+///////////////////////////////////////////////
+
 import java.util.regex.*;
 import java.io.*;
 import java.util.*;
@@ -5,31 +11,26 @@ class grader{
    static int MAXSIZE=30;
    static int Grade=10;
    static String Comment="";
-   public static void main(String[] args) throws IOException 
-   {
- 
-   String call=args[0];     // call
-   String filename=args[1]; // answer filename
-   String filecorrect=args[2]; // correct answer file
+   public static void main(String[] args) throws IOException {
+      String call=args[0];     // call
+      String filename=args[1]; // answer filename
+      String filecorrect=args[2]; // correct answer file
    
-   //System.out.println(REGCOMMANDS[0]);
-   String[] Aarray = new String[MAXSIZE];
-   String[] Carray = new String[MAXSIZE];         
- /////////////////////////////////////Read Answer into Array/////////////////////////////////     
-         int[] s= new int[2];
-         Aarray=readfile(filename,s);
-         int Asize=s[0];
-          SyntaxParse parser= new SyntaxParse();
-          Comment = parser.Syntax(Aarray,Asize-3); // subtract 3 for the execution code
-       
+    String[] Aarray = new String[MAXSIZE];
+    String[] Carray = new String[MAXSIZE];         
+    /////////////////////////////////////Read Answer into Array/////////////////////////////////     
+    int[] s= new int[2];
+    Aarray=readfile(filename,s);
+    int Asize=s[0];
+    SyntaxParse parser= new SyntaxParse();
+    Comment = parser.Syntax(Aarray,Asize-3); // subtract 3 for the execution code
+    System.out.println(Comment);
+    System.exit(0);                   
+  }//main
+   
 
-         System.out.println(Comment);
-       System.exit(0);                   
-   }//main
-   
-     
-   
-  ///////////Read content of file into array ////////////////////////////////
+
+   ///////////Read content of file into array ////////////////////////////////
    static String[] readfile(String filename,int[] s){
          try {
             int size=0;
@@ -47,9 +48,9 @@ class grader{
 			   e.printStackTrace();
             System.exit(1);   
           }
-   return null;
-   }
- ///////////////////// write content from array into file /////////////////////  
+    return null;
+    }
+   ///////////////////// write content from array into file /////////////////////  
    static boolean writefile(String filename,int Asize, String[] array){    
          try {
             FileWriter writer = new FileWriter(filename, false);

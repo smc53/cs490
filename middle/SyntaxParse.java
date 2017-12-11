@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////
-//   SyntaxParse.java                        //
 //   Mateusz Stolarz                         //
 //   UCID: mss86                             //
+// December 11, 2017                         //
 ///////////////////////////////////////////////
 import java.util.regex.*;
 import java.util.function.*;  
@@ -17,9 +17,9 @@ public class SyntaxParse{
    static String[] reserved = {"for","and","or","if","elif","else","while","def","return","not"};
    static int declaredlen=0;
       
-////////////////////////////////////////////////////////////
-//          Set of Recursive Parsing Methods              //
-////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////
+      //          Set of Recursive Parsing Methods              //
+      ////////////////////////////////////////////////////////////
   public static boolean Input(){ // cast that return a number
       if(i<len&&s[i].equals("input")){
            i++;
@@ -423,7 +423,7 @@ public class SyntaxParse{
          }       
    return false;     
    }
-/////////////////////////////////////////////////////Expression //////////////////////////////////////////////
+      /////////////////////////////////////////////////////Expression //////////////////////////////////////////////
    public static boolean ExpressionSign(){
      // if(Stringexp()){
       //   return true;   
@@ -486,17 +486,12 @@ public class SyntaxParse{
    public static boolean List(){
       if(i<len&&s[i].equals("[")){
          i++;
-         int I = i;
          if(Listinput()){
             if(i<len&&s[i].equals("]")){
                i++;
                return true;
             }
-         i=I;
-         }else if(i<len&&s[i].equals("]")){
-               i++;
-               return true;
-            }
+         }
       } 
    return false;
    }
@@ -538,12 +533,12 @@ public class SyntaxParse{
    public static void missing(String mis){
       comment+="Missing/Unreachable "+mis+" at line "+Line+"\n";
    }
-///// save variable names into known array //////////   
+   ///// save variable names into known array //////////   
    static void declare(String name){
       if(!indeclare(name))
             declared[declaredlen++]=name;
          }
-/// checks if variable was declared privisiously ////
+   /// checks if variable was declared privisiously ////
    static boolean indeclare(String name){
           for(int i=0;i<declaredlen;i++){
                if(name.equals(declared[i])){
@@ -553,7 +548,7 @@ public class SyntaxParse{
        //System.out.println(name+" was not declared");
        return false;  
    }
-/// check if the name is a reserved word/////////////////////////////////////
+   /// check if the name is a reserved word/////////////////////////////////////
    static boolean inreserve(String name){
           for(int i=0;i<reserved.length;i++){
                if(name.equals(reserved[i])){
