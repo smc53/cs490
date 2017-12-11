@@ -230,12 +230,17 @@ function getCompletedExam($user, $payload) {
     return json_encode($jsonReturn);
 }
 function submitGradedExam($user, $payload) {
-    $query  = "INSERT INTO `Grades`(`StudentID`, `ExamID`, `Scores`, `Comments`) VALUES ('"
-    .getUserID($user)
-    ."', '".$payload["examID"]."', '"
-    .json_encode($payload["scores"])
-    ."', '".addslashes(json_encode($payload["comments"]))."')";
-    runSQLQuerry($query);
+    $qids = $payload["qids"];
+    for($i=0; $i<count($qids); $i++) {
+        $query;
+        $query  = "INSERT INTO `Grades`(`StudentID`, `ExamID`, `QuestionID`, `Score`, `Comment`) VALUES ("
+        ."'".getUserID($user)."', "
+        ."'".$payload["examID"]."', "
+        ."'".$qids[$i]."', "
+        ."'".$payload["scores"][$i]."', "
+        ."'".$payload["comments"][$i]."')";
+        runSQLQuerry($query);
+    }
     return 'T';
 }
 function releaseGrades($user, $payload) {
@@ -258,11 +263,11 @@ function getStudentGrades($user) {
                 $maxScore             = 0;
                 $question->qid        = $examQuestions[$i]->qid;
 
-                $commentScoreQuery    = "SELECT `Score`, `Comment` FROM `Grades` WHERE `ExamID` = '".$row["ExamID"]."' AND `QuestionID` = '".$question->qid."' AND `StudentID` = '".getUserID($user)."' AND `Released` = 1 ORDER BY `ID` DESC;";
+                $commentScoreQuery    = "SELECT * FROM `Grades` WHERE `ExamID` = '".$row["ExamID"]."' AND `QuestionID` = '".$question->qid."' AND `StudentID` = '".getUserID($user)."' AND `Released` = 1 ORDER BY `ID` DESC;";
                 $commentScoreResult   = runSQLQuerry($commentScoreQuery);
                 $commentScoreRow      = $commentScoreResult->fetch_assoc();
-                $question->comment    = $commentQueryRow["Comment"]; 
-                $question->score      = $commentQueryRow["Score"]; 
+                $question->comment    = $commentScoreRow["Comment"]; 
+                $question->score      = $commentScoreRow["Score"]; 
 
                 $totalScore          += $commentQueryRow["Score"]; 
                 $question->maxScore   = $examQuestions[$i]->maxPoints;
@@ -309,13 +314,15 @@ function getGradesForExam($payload) {
             $questionsArray = array();
             for($i = 0; $i<count($examQuestions); $i++) {
                 $question->qid        = $examQuestions[$i]->qid;
-                $question->score      = json_decode($row["Scores"])[$i];
+
+                $commentScoreQuery    = "SELECT * FROM `Grades` WHERE `ExamID` = '".$payload["examID"]."' AND `QuestionID` = '".$question->qid."' AND `StudentID` = '".$row["StudentID"]."' ORDER BY `ID` DESC;";
+                $commentScoreResult   = runSQLQuerry($commentScoreQuery);
+                $commentScoreRow      = $commentScoreResult->fetch_assoc();
+                $question->comment    = $commentScoreRow["Comment"]; 
+                $question->score      = $commentScoreRow["Score"]; 
                 $question->maxScore   = $examQuestions[$i]->maxPoints;
 
-                $commentQuery         = "SELECT `Comments` FROM `Grades` WHERE `ExamID` = '".$payload["ExamID"]."' AND `QuestionID` = '".$question->qid."' AND `StudentID` = '".getUserID($user)."' ORDER BY `ID` DESC;";
-                $commentQueryrResult  = runSQLQuerry($commentQuery);
-                $commentQueryRow      = $commentQueryrResult->fetch_assoc();
-                $question->comment    = $commentQueryRow["Comments"]; 
+$question->test = $commentScoreQuery;
 
                 $studentAnswerQuery   = "SELECT `Answer` FROM `CompletedExaminations` WHERE `ExamID` = '".$payload["examID"]."' AND `QuestionID` = '".$question->qid."' AND `StudentID` = '".$row["StudentID"]."' ORDER BY `ID` DESC;";
                 $studentAnswerResult  = runSQLQuerry($studentAnswerQuery);
@@ -343,32 +350,7 @@ function getGradesForExam($payload) {
     return json_encode($jsonReturn);
 }
 function editGradesForExam($username, $payload) {
-    $qid             = $payload["qid"];
-    $examData        = internal_getTestData($payload["examID"]);
-    $examQuestion    = array();
-    $examQuestions   = json_decode($examData->questions);
-    $index = -1;
-
-    for($i=0; $i<count($examQuestions); $i++) {
-        if($examQuestions[$i]->qid == $qid) {
-            $index = $i;
-        }
-    }
-    if($index == -1) {
-        return 'F';
-    }
-
-    $query            = "SELECT * FROM `Grades` WHERE `StudentID` = '".$payload["studentID"]."' AND `ExamID` = '".$payload["examID"]."' ORDER BY `ID` DESC;";
-    $result           = runSQLQuerry($query);
-    $gradeRow         = $result->fetch_assoc();
-
-    $originalScores   = json_decode($gradeRow["Scores"]);
-    $originalComments = json_decode($gradeRow["Comments"]);
-
-    $originalScores[$index]   = $payload["score"];
-    $originalComments[$index] = $payload["comment"];
-
-    $query  = "INSERT INTO `Grades`(`StudentID`, `ExamID`, `Scores`, `Comments`, `Released`) VALUES ('".$payload["studentID"]."', '".$payload["examID"]."', '".json_encode($originalScores)."', '".json_encode($originalComments)."', '".$payload["released"]."')";
+    $query  = "INSERT INTO `Grades`(`StudentID`, `ExamID`, `QuestionID`, `Score`, `Comment`, `Released`) VALUES ('".$payload["studentID"]."', '".$payload["examID"]."', '".$payload["qid"]."', '".$payload["score"]."', '".$payload["comment"]."', '".$payload["released"]."')";
     runSQLQuerry($query);
     return 'T';
 }
