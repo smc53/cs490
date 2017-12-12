@@ -199,14 +199,14 @@ if(isset($_POST['request'])){
         if($mistake){
                 $temp = fixfunction($call1, $answer);
                 if($temp[1]){
-                  $comment=$comment."Incorrect function name has been used\t\t\t\t\t\t\t -$ptPerMistake pt<br>";
+                  $comment=$comment."Incorrect function name has been used\t\t\t\t\t\t -$ptPerMistake pt<br>";
                   $penelty+=$ptPerMistake;
                 }
                 $answer = $temp[0]; 
                 writefile($Answerfile,$answer,$call1);
                 $incorrect = paramcheck($correct,$answer);
                 if($incorrect>0){
-                  $comment=$comment."$incorrect Incorrect parameter name(s) used\t\t\t\t\t\t\t -".$ptPerMistake." pt <br>";
+                  $comment=$comment."$incorrect Incorrect parameter name(s) used\t\t\t\t\t\t -".$ptPerMistake." pt <br>";
                   $penelty+=$ptPerMistake;
                 }
            $mistake = false;
@@ -231,7 +231,7 @@ if(isset($_POST['request'])){
           $command = "timeout 3s java grader ".'"'.$call1.'"'." ".$Answerfile." ".$Correctfile;
           exec($command, $outputJ, $returnJ);             
           $recivedanswer[]=" ";
-          $comment=$comment."The code Was not executable\t\t\t\t\t\t\t\t-".($maxPoints-$penelty)."pt";
+          $comment=$comment."The code Was not executable\t\t\t\t\t\t\t\t -".($maxPoints-$penelty)."pt";
           for($e=0; $e<sizeof($outputJ);$e++){
                $comment=$comment."<br>".$outputJ[$e];
           }
@@ -247,10 +247,10 @@ if(isset($_POST['request'])){
       if($success){
         $ccount=0;
         for($i=0; $i<count($expectedanswer);$i++){
-           $output=",\tIncorrect\t -$ptPerQ pt <br>";
+           $output=",\tIncorrect\t -".round($ptPerQ,2)." pt <br>";
     
         if ( $expectedanswer[$i] == $recivedanswer[$i] ){
-          $output=",\tCorrect  \t +$ptPerQ pt<br>";  
+          $output=",\tCorrect  \t +".round($ptPerQ,2)." pt<br>";  
           $ccount++; 
         }
          $comment= $comment."Call: ".$callfield[$i]." Expected:\t".$expectedanswer[$i].",\tReceived:\t".$recivedanswer[$i].$output; 
