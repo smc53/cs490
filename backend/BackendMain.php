@@ -258,9 +258,9 @@ function getStudentGrades($user) {
             $examData = internal_getTestData($row["ExamID"]);
             $examQuestions = json_decode($examData->questions);
             $questionsArray = array();
+            $totalScore           = 0;
+            $maxScore             = 0;
             for($i = 0; $i<count($examQuestions); $i++) {
-                $totalScore           = 0;
-                $maxScore             = 0;
                 $question->qid        = $examQuestions[$i]->qid;
 
                 $commentScoreQuery    = "SELECT * FROM `Grades` WHERE `ExamID` = '".$row["ExamID"]."' AND `QuestionID` = '".$question->qid."' AND `StudentID` = '".getUserID($user)."' AND `Released` = 1 ORDER BY `ID` DESC;";
@@ -269,7 +269,7 @@ function getStudentGrades($user) {
                 $question->comment    = $commentScoreRow["Comment"]; 
                 $question->score      = $commentScoreRow["Score"]; 
 
-                $totalScore          += $commentQueryRow["Score"]; 
+                $totalScore          += $question->score; 
                 $question->maxScore   = $examQuestions[$i]->maxPoints;
                 $maxScore            += $examQuestions[$i]->maxPoints;
 
@@ -312,6 +312,8 @@ function getGradesForExam($payload) {
     while($row  = $result->fetch_assoc()) {
         if(array_search($row["StudentID"], $checkedStudentsArray) === FALSE) {
             $questionsArray = array();
+            $totalScore           = 0;
+            $maxScore             = 0;
             for($i = 0; $i<count($examQuestions); $i++) {
                 $question->qid        = $examQuestions[$i]->qid;
 
@@ -322,7 +324,9 @@ function getGradesForExam($payload) {
                 $question->score      = $commentScoreRow["Score"]; 
                 $question->maxScore   = $examQuestions[$i]->maxPoints;
 
-$question->test = $commentScoreQuery;
+
+                $totalScore          += $question->score; 
+                $maxScore            += $question->maxScore;
 
                 $studentAnswerQuery   = "SELECT `Answer` FROM `CompletedExaminations` WHERE `ExamID` = '".$payload["examID"]."' AND `QuestionID` = '".$question->qid."' AND `StudentID` = '".$row["StudentID"]."' ORDER BY `ID` DESC;";
                 $studentAnswerResult  = runSQLQuerry($studentAnswerQuery);
@@ -339,6 +343,8 @@ $question->test = $commentScoreQuery;
             $examGrade->examName    = $examData->name;
             $examGrade->examID      = $row["ExamID"];
             $examGrade->questions   = $questionsArray;
+            $examGrade->score       = $totalScore;
+            $examGrade->maxScore    = $maxScore;
             $examGrade->studentID   = $row["StudentID"];
             $examGrade->studentName = getUsername($row["StudentID"]);
             $examGrade->released    = $row["Released"];
